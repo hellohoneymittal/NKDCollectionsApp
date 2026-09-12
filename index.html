@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Responsive Scrollable Table</title>
+
+    <link rel="stylesheet" href="StylesCommon.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  </head>
+  <body>
+    <div class="mainContainerDiv">
+      <div id="loadingSpinner" style="display: none">
+        <div class="spinner"></div>
+      </div>
+      <div class="infoPopup" id="successPopup">
+        <div class="infoPopup-content">
+          <div class="infoPopup-icon success"></div>
+          <h2 class="infoPopup-heading success">Success!</h2>
+          <div id="successMessage" class="infoPopup-message"></div>
+          <button class="green" onclick="CLOSE_INFO_POPUP('successPopup')">
+            OKAY
+          </button>
+        </div>
+      </div>
+      <div class="infoPopup" id="errorPopup">
+        <div class="infoPopup-content">
+          <div class="infoPopup-icon error"></div>
+          <h2 class="infoPopup-heading error">Error!</h2>
+          <div id="errorMessage" class="infoPopup-message"></div>
+          <button class="red" onclick="CLOSE_INFO_POPUP('errorPopup')">
+            TRY AGAIN
+          </button>
+        </div>
+      </div>
+      <div class="infoPopup" id="confirmationPopup">
+        <div class="infoPopup-content">
+          <div class="infoPopup-icon confirmation"></div>
+          <div class="infoPopup-message" id="confirmationMessage"></div>
+          <div class="button-row">
+            <button class="red" id="confirmationNoButton">NO</button>
+            <button class="green" id="confirmationYesButton">YES</button>
+          </div>
+        </div>
+      </div>
+      <div class="infoPopup" id="confirmationGridPopup">
+        <div class="infoPopup-content">
+          <div class="infoPopup-icon confirmation"></div>
+
+          <!-- Status Text Area -->
+          <div id="confirmationGridStatusText" class="heading"></div>
+
+          <!-- Table Grid Container -->
+          <div
+            id="confirmationGridContainer"
+            class="collection-table-container scrollable-content-table"
+            style="margin-top: 10px"
+          >
+            <table id="confirmationGridTable">
+              <thead id="confirmationGridTHead" class="table-header">
+                <!-- Table headers will be dynamically generated here -->
+              </thead>
+              <tbody id="confirmationGridTBody">
+                <!-- Table rows will be dynamically generated here -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Buttons for Confirmation -->
+          <div class="button-row">
+            <button class="red" id="confirmationGridNoButton">NO</button>
+            <button class="green" id="confirmationGridYesButton">YES</button>
+          </div>
+        </div>
+      </div>
+      <div class="popup" style="display: flex" id="passwordContainer">
+        <div class="popup-content">
+          <img
+            src="https://i.postimg.cc/6qk7sNyZ/donation-image.webp"
+            border="0"
+            alt="Donation icon"
+          />
+
+          <div class="popup-content" style="margin-top: 10px">
+            <label for="mainPasswordTxtBox" class="required">Password</label>
+            <input
+              type="text"
+              id="mainPasswordTxtBox"
+              placeholder="Enter text here..."
+            />
+            <div class="button-row">
+              <button class="red" id="pcClearBtn">Clear</button>
+              <button
+                class="green"
+                id="pcSubmitBtn"
+                onclick="pcSubmitBtnClick()"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="adminContainer">
+        <div class="popup-content scrollable-content">
+          <h2>Admin Panel</h2>
+
+          <div class="navbar" id="navbarAdmin">
+            <a
+              href="#pendingA"
+              onclick="showNavBarSection(event, 'pendingA', 'adminContainer', 'navbarAdmin')"
+              class="active"
+              >Pending List</a
+            >
+            <a
+              href="#collectionA"
+              onclick="showNavBarSection(event, 'collectionA', 'adminContainer', 'navbarAdmin')"
+              >New Collection</a
+            >
+          </div>
+
+          <div id="pendingA" class="section" style="display: block">
+            <div class="liveSearchContainer">
+              <label for="adminSkName" class="required">Sewakarta Name </label>
+              <input
+                type="text"
+                id="adminSkName"
+                class="liveSearch"
+                placeholder="Search for Sewakarta Name..."
+              />
+              <ul id="adminSkNameULList" class="liveSearchUL"></ul>
+            </div>
+            <button class="green" onclick="getSkPendingListBtnClick()">
+              Result
+            </button>
+            <button class="red" onclick="skBackClick()">
+              Back to Collection Input
+            </button>
+            <div>
+              <div
+                class="download-icon-container"
+                id="skTableDivDownloadIcon"
+                style="display: none"
+              >
+                <img
+                  src="https://cdn-thumbs.imagevenue.com/85/09/8b/ME196HF8_t.png"
+                  alt="Download Excel"
+                  class="download-icon"
+                  onclick="skExcelButtonClick('skTable')"
+                />
+              </div>
+              <div
+                class="collection-table-container scrollable-content-table"
+                id="skTableDiv"
+              >
+                <table id="skTable">
+                  <thead id="skTableTHead" class="table-header">
+                    <!-- Table headers will be dynamically generated here -->
+                  </thead>
+                  <tbody id="skTableTBody">
+                    <!-- Table rows will be dynamically generated here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div id="collectionA" class="section">
+            <div class="liveSearchContainer">
+              <label for="adminCollSkName" class="required"
+                >Sewakarta Name
+              </label>
+              <input
+                type="text"
+                id="adminCollSkName"
+                class="liveSearch"
+                placeholder="Search for Sewakarta Name..."
+              />
+              <ul id="adminCollSkNameULList" class="liveSearchUL"></ul>
+            </div>
+            <button class="green" onclick="goToDevCollectionInputClick()">
+              Go To Collection Input
+            </button>
+            <button class="red" onclick="skBackClick()">Back to Admin</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="cmMainContainer">
+        <div class="popup" id="collectionMasterContainer">
+          <div class="popup-content scrollable-content">
+            <div class="popup-content">
+              <span class="welcome-title">Welcome:</span>
+              <span id="userNameLbl"></span>
+            </div>
+            <h2>Collection Input Form</h2>
+
+            <div style="display: none" id="adminRoleButton">
+              <button
+                class="green"
+                id="adminPanelBtn"
+                onclick="adminPanelBtnClick()"
+              >
+                Admin Panel
+              </button>
+            </div>
+            <div class="button-row">
+              <button
+                class="linkButton"
+                id="cmNewDonorBtn"
+                onclick="cmNewDonorBtnClick()"
+              >
+                + New Donor
+              </button>
+              <button
+                class="linkButton-flexEnd"
+                id="logoutBtn"
+                onclick="logoutClick()"
+              >
+                Logout
+              </button>
+            </div>
+
+            <div class="liveSearchContainer">
+              <label for="cmNameLiveSearch" class="required"
+                >Name - Last Year - Current Year:</label
+              >
+              <input
+                type="text"
+                id="cmNameLiveSearch"
+                class="liveSearch"
+                placeholder="Search for donor name..."
+              />
+              <ul id="cmNameULList" class="liveSearchUL"></ul>
+            </div>
+
+            <label for="cmAmountTxtBox" class="required">Amount</label>
+            <input
+              type="text"
+              id="cmAmountTxtBox"
+              placeholder="Enter amount here..."
+              pattern="[0-9]{10}"
+              oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+              maxlength="11"
+            />
+
+            <label for="cmPaymentDdl" class="required">Payment Method</label>
+            <select id="cmPaymentDdl" required>
+              <option value="">Select</option>
+              <option value="Cash">Cash</option>
+              <option value="Scanner / UPI / QR Code">Scanner</option>
+              <option value="NEFT">NEFT</option>
+              <option value="Cheque">Cheque</option>
+              <option value="RazorPay">RazorPay</option>
+            </select>
+
+            <label for="cmUploadControl" style="margin-bottom: 10px"
+              >Upload File</label
+            >
+            <input
+              type="file"
+              accept="image/*"
+              id="cmUploadControl"
+              onchange="cmFetchFile()"
+            />
+
+            <label for="cmNotesTxtBox">Notes</label>
+            <textarea id="cmNotesTxtBox" placeholder="Any notes ..."></textarea>
+
+            <div class="button-row">
+              <button class="red" id="cmClearBtn" onclick="cmClearBtnClick()">
+                Clear
+              </button>
+              <button
+                class="green"
+                id="cmSubmitBtn"
+                onclick="cmSubmitBtnClick()"
+              >
+                Submit
+              </button>
+            </div>
+            <div class="button-row">
+              <button
+                class="blue"
+                id="cmTotalCollectionBtn"
+                onclick="cmTotalCollectionBtnClick()"
+              >
+                Total Collection List
+              </button>
+              <button
+                class="blue"
+                id="cmPedningDonorBtn"
+                onclick="cmPedningDonorBtnClick()"
+              >
+                Pending Donors List
+              </button>
+            </div>
+            <div class="button-row">
+              <button class="green" id="cmTest" onclick="openCMRContainer()">
+                Recurring Collection
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="popup" id="cmCollectionListContainer">
+          <div class="popup-content scrollable-content">
+            <h2>Collection List</h2>
+            <button class="red" onclick="cmCollectionListContainerClick()">
+              Back
+            </button>
+
+            <div class="download-icon-container">
+              <img
+                cmCollectionListC
+                src="https://cdn-thumbs.imagevenue.com/85/09/8b/ME196HF8_t.png"
+                alt="Download Excel"
+                class="download-icon"
+                onclick="collectionListExcelBtnClick('cmTable')"
+              />
+            </div>
+            <div
+              class="collection-table-container scrollable-content-table"
+              id="cmTableDiv"
+            >
+              <table id="cmTable">
+                <thead id="cmTableTHead" class="table-header">
+                  <!-- Table headers will be dynamically generated here -->
+                </thead>
+                <tbody id="cmTableTBody">
+                  <!-- Table rows will be dynamically generated here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="popup" id="cmPendingDonorContainer">
+          <div class="popup-content scrollable-content">
+            <h2>Pending Donors List</h2>
+            <button class="red" onclick="cmPendingDonorContainerCancelClick()">
+              Back
+            </button>
+
+            <div class="download-icon-container">
+              <img
+                src="https://cdn-thumbs.imagevenue.com/85/09/8b/ME196HF8_t.png"
+                alt="Download Excel"
+                class="download-icon"
+                onclick="cmPendingDonorDownloadClick('pdTable')"
+              />
+            </div>
+            <div
+              class="collection-table-container scrollable-content-table"
+              id="pending-donor-table"
+            >
+              <table id="pdTable">
+                <thead id="pdTableHead" class="table-header">
+                  <!-- Table headers will be dynamically generated here -->
+                </thead>
+                <tbody id="pdTableBody">
+                  <!-- Table rows will be dynamically generated here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="cmrMainContainer">
+        <div class="popup" id="cmrContainer">
+          <div class="popup-content scrollable-content">
+            <h2>Recurring Input Form</h2>
+
+            <div class="button-row">
+              <button
+                class="green"
+                id="cmrBackButton"
+                onclick="cmrBackButton()"
+              >
+                Back To Collection input
+              </button>
+            </div>
+            <div class="button-row">
+              <button class="linkButton" onclick="cmNewDonorBtnClick()">
+                + New Donor
+              </button>
+              <button
+                class="linkButton-flexEnd"
+                id="logoutBtn"
+                onclick="logoutClick()"
+              >
+                Logout
+              </button>
+            </div>
+
+            <div class="liveSearchContainer">
+              <label for="cmrNameLiveSearch" class="required"
+                >Name - Last Year - Current Year:</label
+              >
+              <input
+                type="text"
+                id="cmrNameLiveSearch"
+                class="liveSearch"
+                placeholder="Search for donor name..."
+              />
+              <ul id="cmrNameULList" class="liveSearchUL"></ul>
+            </div>
+
+            <label for="cmrRecurringTypeDdl" class="required"
+              >Recurring Type</label
+            >
+            <select id="cmrRecurringTypeDdl" required>
+              <option value="">Select</option>
+              <option value="Daily">Daily</option>
+              <option value="Weekly">Weekly</option>
+              <option value="BiWeekly">Bi-Weekly</option>
+              <option value="Monthly">Monthly</option>
+              <option value="Quarterly">Quarterly</option>
+            </select>
+
+            <label for="cmrEmailTextBox" class="required">Email</label>
+            <input type="text" placeholder="Email..." id="cmrEmailTextBox" />
+
+            <label for="cmrDesTxtBox">Description</label>
+            <textarea id="cmrDesTxtBox" placeholder="Details ..."></textarea>
+
+            <div class="button-row">
+              <button class="red" id="cmrClearBtn" onclick="cmrClearBtnClick()">
+                Clear
+              </button>
+              <button
+                class="green"
+                id="cmrSubmitBtn"
+                onclick="cmrSubmitBtnClick()"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="donorMasterContainer">
+        <div class="popup-content scrollable-content">
+          <h2>New Donor Form</h2>
+          <label for="dmNameTxtBox" class="required">Donor Name:</label>
+          <input
+            type="text"
+            id="dmNameTxtBox"
+            placeholder="Enter donor name"
+            required
+          />
+
+          <label for="dmAddressTxtBox" class="required">Address</label>
+          <input
+            type="text"
+            id="dmAddressTxtBox"
+            placeholder="Enter address"
+            required
+          />
+
+          <label for="dmContactNumberTxtBox" class="required"
+            >Contact Number</label
+          >
+          <input
+            type="text"
+            id="dmContactNumberTxtBox"
+            placeholder="Enter contact number"
+            pattern="[0-9]{10}"
+            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+            maxlength="11"
+            required
+          />
+
+          <label for="birthday" class="required">Birthday</label>
+          <input type="date" id="birthday" required />
+
+          <label for="spouseBirthday">Birthday of Spouse</label>
+          <input type="date" id="spouseBirthday" />
+
+          <label for="child1Birthday">Birthday of Child 1</label>
+          <input type="date" id="child1Birthday" />
+
+          <label for="child2Birthday">Birthday of Child 2</label>
+          <input type="date" id="child2Birthday" />
+
+          <label for="anniversary">Anniversary</label>
+          <input type="date" id="anniversary" />
+
+          <label for="profession">Profession</label>
+          <input type="text" id="profession" placeholder="Enter profession" />
+
+          <div class="button-row">
+            <button id="dmBackBtn" class="red" onclick="dmBackBtnClick()">
+              Back
+            </button>
+            <button id="dmSubmitBtn" class="green" onclick="dmSubmitBtnClick()">
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="Script.js"></script>
+    <script src="ScriptCommon.js"></script>
+    <script src="ScriptConstants.js"></script>
+    <script src="ScriptCollectionMaster.js"></script>
+    <script src="ScriptDonorMaster.js"></script>
+    <script src="ScriptAdmin.js"></script>
+  </body>
+</html>
