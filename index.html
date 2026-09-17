@@ -102,98 +102,89 @@
         <div class="popup-content scrollable-content">
           <h2>Admin Panel</h2>
 
-          <div class="navbar" id="navbarAdmin">
-            <a
-              href="#pendingA"
-              onclick="
-                showNavBarSection(
-                  event,
-                  'pendingA',
-                  'adminContainer',
-                  'navbarAdmin',
-                )
-              "
-              class="active"
-              >Pending List</a
+          <div class="button-row">
+            <button class="blue" id="pendingA" onclick="getSewaKartaNameList()">
+              Pending List
+            </button>
+            <button
+              class="green"
+              id="collectionA"
+              onclick="getAllDevoteesList()"
             >
-            <a
-              href="#collectionA"
-              onclick="
-                showNavBarSection(
-                  event,
-                  'collectionA',
-                  'adminContainer',
-                  'navbarAdmin',
-                )
-              "
-              >New Collection</a
+              New Collection
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="popup" id="pendingAPopup">
+        <div class="popup-content scrollable-content">
+          <div class="liveSearchContainer">
+            <label for="adminSkName" class="required">Sewakarta Name </label>
+            <input
+              type="text"
+              id="adminSkName"
+              class="liveSearch"
+              placeholder="Search for Sewakarta Name..."
+            />
+            <ul id="adminSkNameULList" class="liveSearchUL"></ul>
+          </div>
+          <button class="green" onclick="getSkPendingListBtnClick()">
+            Result
+          </button>
+          <button class="red" onclick="skBackClick()">
+            Back to Admin Panel
+          </button>
+          <div>
+            <div
+              class="download-icon-container"
+              id="skTableDivDownloadIcon"
+              style="display: none"
             >
-          </div>
-
-          <div id="pendingA" class="section" style="display: block">
-            <div class="liveSearchContainer">
-              <label for="adminSkName" class="required">Sewakarta Name </label>
-              <input
-                type="text"
-                id="adminSkName"
-                class="liveSearch"
-                placeholder="Search for Sewakarta Name..."
+              <img
+                src="https://cdn-thumbs.imagevenue.com/85/09/8b/ME196HF8_t.png"
+                alt="Download Excel"
+                class="download-icon"
+                onclick="skExcelButtonClick('skTable')"
               />
-              <ul id="adminSkNameULList" class="liveSearchUL"></ul>
             </div>
-            <button class="green" onclick="getSkPendingListBtnClick()">
-              Result
-            </button>
-            <button class="red" onclick="skBackClick()">
-              Back to Collection Input
-            </button>
-            <div>
-              <div
-                class="download-icon-container"
-                id="skTableDivDownloadIcon"
-                style="display: none"
-              >
-                <img
-                  src="https://cdn-thumbs.imagevenue.com/85/09/8b/ME196HF8_t.png"
-                  alt="Download Excel"
-                  class="download-icon"
-                  onclick="skExcelButtonClick('skTable')"
-                />
-              </div>
-              <div
-                class="collection-table-container scrollable-content-table"
-                id="skTableDiv"
-              >
-                <table id="skTable">
-                  <thead id="skTableTHead" class="table-header">
-                    <!-- Table headers will be dynamically generated here -->
-                  </thead>
-                  <tbody id="skTableTBody">
-                    <!-- Table rows will be dynamically generated here -->
-                  </tbody>
-                </table>
-              </div>
+            <div
+              class="collection-table-container scrollable-content-table"
+              id="skTableDiv"
+            >
+              <table id="skTable">
+                <thead id="skTableTHead" class="table-header">
+                  <!-- Table headers will be dynamically generated here -->
+                </thead>
+                <tbody id="skTableTBody">
+                  <!-- Table rows will be dynamically generated here -->
+                </tbody>
+              </table>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div id="collectionA" class="section">
-            <div class="liveSearchContainer">
-              <label for="adminCollSkName" class="required"
-                >Sewakarta Name
-              </label>
-              <input
-                type="text"
-                id="adminCollSkName"
-                class="liveSearch"
-                placeholder="Search for Sewakarta Name..."
-              />
-              <ul id="adminCollSkNameULList" class="liveSearchUL"></ul>
-            </div>
-            <button class="green" onclick="goToDevCollectionInputClick()">
-              Go To Collection Input
-            </button>
-            <button class="red" onclick="skBackClick()">Back to Admin</button>
+      <div class="popup" id="collectionAPopup">
+        <div class="popup-content scrollable-content">
+          <div class="liveSearchContainer">
+            <label for="adminCollSkName" class="required"
+              >Sewakarta Name
+            </label>
+            <input
+              type="text"
+              id="adminCollSkName"
+              class="liveSearch"
+              placeholder="Search for Sewakarta Name..."
+            />
+            <ul id="adminCollSkNameULList" class="liveSearchUL"></ul>
           </div>
+          <button class="green" onclick="goToDevCollectionInputClick()">
+            Go To Collection Input
+          </button>
+          <button class="red" onclick="skBackClick()">
+            Back to Admin Panel
+          </button>
         </div>
       </div>
 

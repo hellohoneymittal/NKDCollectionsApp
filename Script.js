@@ -48,6 +48,7 @@ function populateDevoteeData(response) {
     const devName = response?.data?.devName?.toString().trim();
     loginUserName = devName;
     SET_USER_NAME_ON_SCREEN(loginUserName);
+    SET_DIV_TITLE("collectionMasterContainer", "Collection Input Form");
     localStorage.setItem(bheeshmUserNameLSKey, loginUserName);
     localStorage.setItem(
       bheeshmUserFacilitatorLSKey,
@@ -63,7 +64,7 @@ function clearLocalStorageOnInitialLoad() {
   // Clear specific keys
   localStorage.removeItem(bheeshmUserNameLSKey);
   localStorage.removeItem(bheeshmUserFacilitatorLSKey);
-  document.getElementById("userNameLbl").innerHTML = "";
+
   ShowPopup("passwordContainer");
   HidePopup("collectionMasterContainer");
   ClearTextBoxValue("mainPasswordTxtBox");
