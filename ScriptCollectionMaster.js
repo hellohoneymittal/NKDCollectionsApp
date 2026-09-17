@@ -50,6 +50,28 @@ document.addEventListener("DOMContentLoaded", function () {
       selectedRecurringDonorName = selectedText;
     },
   );
+
+  const paymentMethodDropDown = document.getElementById("cmPaymentDdl");
+  const transactionForContainer = document.getElementById(
+    "cmTransactionForContainer",
+  );
+  const transactionForDropDown = document.getElementById("cmTransactionForDdl");
+
+  function toggleTransactionForDropdown() {
+    const isCashSelected = paymentMethodDropDown.value === "Cash";
+    transactionForContainer.style.display = isCashSelected ? "block" : "none";
+    transactionForDropDown.required = isCashSelected;
+
+    if (!isCashSelected) {
+      transactionForDropDown.selectedIndex = 0;
+    }
+  }
+
+  paymentMethodDropDown.addEventListener(
+    "change",
+    toggleTransactionForDropdown,
+  );
+  toggleTransactionForDropdown();
 });
 
 function validateDonorSelection() {
@@ -100,45 +122,50 @@ async function cmTotalCollectionBtnClick() {
   await getCollectionMasterDataAsync(devoteeNameCM);
   IsLoading(false);
 }
+
 // Function to run on page load
 async function initializeCollctionMasterPage(devName) {
-  IsLoading(true);
   const request = {
-    apiType: "GET_DONOR_NAME_LIST",
+    apiType: "",
     devName: devName,
   };
-  fetch(APPLICATION_URL, {
-    method: "POST",
-    body: JSON.stringify(request),
-  })
-    .then((apiResponse) => apiResponse.json())
-    .then((response) => {
-      IsLoading(false);
-      if (response.status) {
-        masterList = response.data;
 
-        initializedLiveSearchControl(
-          "cmrNameLiveSearch",
-          "cmrNameULList",
-          masterList,
-        );
+  const response = await CALL_API_WITH_CACHE("GET_DONOR_NAME_LIST", request);
+  populateCollectionInputForm(devName, response);
+}
 
-        masterList.unshift(devName);
-        initializedLiveSearchControl(
-          cmNameLiveSearch,
-          cmNameULList,
-          masterList,
-        );
-      } else {
-        SHOW_ERROR_POPUP(
-          "Something went wrong , Please contact to any NKD Servants",
-        );
-      }
-    })
-    .catch((ex) => {
-      console.log("Error - ", ex);
-      IsLoading(false);
-    });
+async function initializeCollctionMasterPageWithReload(isReload = false) {
+  const request = {
+    apiType: "",
+    devName: loginUserName,
+  };
+
+  const response = await CALL_API_WITH_CACHE(
+    "GET_DONOR_NAME_LIST",
+    request,
+    "",
+    isReload,
+  );
+  populateCollectionInputForm(loginUserName, response);
+}
+
+function populateCollectionInputForm(devName, response) {
+  if (response.status) {
+    masterList = response.data;
+
+    initializedLiveSearchControl(
+      "cmrNameLiveSearch",
+      "cmrNameULList",
+      masterList,
+    );
+
+    masterList.unshift(devName);
+    initializedLiveSearchControl(cmNameLiveSearch, cmNameULList, masterList);
+  } else {
+    SHOW_ERROR_POPUP(
+      "Something went wrong , Please contact to any NKD Servants",
+    );
+  }
 }
 
 function cmNewDonorBtnClick() {

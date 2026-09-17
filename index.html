@@ -6,6 +6,8 @@
     <title>Responsive Scrollable Table</title>
 
     <link rel="stylesheet" href="StylesCommon.css" />
+    <link rel="stylesheet" href="StyleRefreshButton.css" />
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
   </head>
   <body>
@@ -198,11 +200,21 @@
       <div id="cmMainContainer">
         <div class="popup" id="collectionMasterContainer">
           <div class="popup-content scrollable-content">
-            <div>
-              <span class="welcome-title">Welcome:</span>
-              <span id="userNameLbl"></span>
+            <div class="displayDiv">
+              <div class="user-info-block"></div>
+              <div class="refresh-button-container">
+                <div class="popup-title-box"></div>
+                <div class="refresh-button-div">
+                  <button
+                    class="refresh-btn-new"
+                    onclick="initializeCollctionMasterPageWithReload(true)"
+                  >
+                    <span class="refresh-text">Refresh</span>
+                    <span class="refresh-icon">⟳</span>
+                  </button>
+                </div>
+              </div>
             </div>
-            <h2>Collection Input Form</h2>
 
             <div style="display: none" id="adminRoleButton">
               <button
@@ -263,6 +275,20 @@
               <option value="RazorPay">RazorPay</option>
             </select>
 
+            <div id="cmTransactionForContainer" style="display: none">
+              <label for="cmTransactionForDdl" class="required"
+                >Transaction For</label
+              >
+              <select id="cmTransactionForDdl">
+                <option value="">Select</option>
+                <option value="donor">Donor</option>
+                <option value="sankirtan">Sankirtan</option>
+                <option value="janmasthmi">Janmasthmi</option>
+                <option value="nityaseva">Nitya seva</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
+
             <label for="cmUploadControl" style="margin-bottom: 10px"
               >Upload File</label
             >
@@ -302,11 +328,6 @@
                 onclick="cmPedningDonorBtnClick()"
               >
                 Pending Donors List
-              </button>
-            </div>
-            <div class="button-row">
-              <button class="green" id="cmTest" onclick="openCMRContainer()">
-                Recurring Collection
               </button>
             </div>
           </div>

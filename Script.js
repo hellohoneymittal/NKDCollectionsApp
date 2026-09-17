@@ -1,6 +1,6 @@
 const pcSubmitBtn = "pcSubmitBtn";
 const mainPasswordTxtBox = "mainPasswordTxtBox";
-
+let loginUserName = "";
 document.addEventListener("DOMContentLoaded", async function () {
   const cacheResponse = await DB_GET(
     "GET_DEVOTEE_INFO",
@@ -10,11 +10,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   if (cacheResponse) {
     populateDevoteeData(cacheResponse);
-    // selectedUser = cacheResponse?.data;
-    // selectedDevoteeName = cacheResponse?.data?.name;
-    // renderMenus(cacheResponse?.data?.role);
+    SET_USER_NAME_ON_SCREEN(cacheResponse?.data?.devName?.toString().trim());
+    SET_DIV_TITLE("collectionMasterContainer", "Collection Input Form");
   } else {
-    SHOW_SPECIFIC_DIV("passwordPopup");
+    SHOW_SPECIFIC_DIV("passwordContainer");
   }
 });
 
@@ -47,15 +46,16 @@ function populateDevoteeData(response) {
       ShowPopup("adminRoleButton");
     }
     const devName = response?.data?.devName?.toString().trim();
-    document.getElementById("userNameLbl").innerHTML = `<b>${devName}</b>`; // set user name
-    localStorage.setItem(bheeshmUserNameLSKey, devName);
+    loginUserName = devName;
+    SET_USER_NAME_ON_SCREEN(loginUserName);
+    localStorage.setItem(bheeshmUserNameLSKey, loginUserName);
     localStorage.setItem(
       bheeshmUserFacilitatorLSKey,
       response?.data?.facilitator?.toString(),
     );
     ShowPopup(CM_CONTANER);
     HidePopup(PASSWORD_CONTAINER);
-    initializeCollctionMasterPage(devName);
+    initializeCollctionMasterPage(loginUserName);
   }
 }
 
@@ -73,7 +73,8 @@ window.onload = function () {
   clearLocalStorageOnInitialLoad();
 };
 
-function logoutClick() {
+async function logoutClick() {
+  await DB_CLEAR(INDEX_DB.dbName, INDEX_DB.storeName);
   clearLocalStorageOnInitialLoad();
   resetFormFields();
 }
