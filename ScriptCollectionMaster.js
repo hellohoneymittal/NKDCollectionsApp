@@ -1,6 +1,7 @@
 const cmNameLiveSearch = "cmNameLiveSearch";
 const cmAmountTxtBox = "cmAmountTxtBox";
 const cmPaymentDdl = "cmPaymentDdl";
+const cmTransactionForDdl = "cmTransactionForDdl";
 const cmUploadControl = "cmUploadControl";
 const cmNotesTxtBox = "cmNotesTxtBox";
 const cmNameULList = "cmNameULList";
@@ -38,6 +39,30 @@ const dateForExcel = getFormattedDateForDownload();
 const cmNameULListCtrl = document.getElementById(cmNameULList);
 const cmNameLiveSearchCtrl = document.getElementById(cmNameLiveSearch);
 
+function toggleTransactionForDropdown() {
+  const paymentMethodDropDown = document.getElementById("cmPaymentDdl");
+  const transactionForContainer = document.getElementById(
+    "cmTransactionForContainer",
+  );
+  const transactionForDropDown = document.getElementById("cmTransactionForDdl");
+
+  if (
+    !paymentMethodDropDown ||
+    !transactionForContainer ||
+    !transactionForDropDown
+  ) {
+    return;
+  }
+
+  const isCashSelected = paymentMethodDropDown.value === "Cash";
+  transactionForContainer.style.display = isCashSelected ? "block" : "none";
+  transactionForDropDown.required = isCashSelected;
+
+  if (!isCashSelected) {
+    transactionForDropDown.selectedIndex = 0;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   setupLiveSearch("cmNameLiveSearch", "cmNameULList", function (selectedText) {
     selectedDonorName = selectedText;
@@ -50,6 +75,13 @@ document.addEventListener("DOMContentLoaded", function () {
       selectedRecurringDonorName = selectedText;
     },
   );
+
+  const paymentMethodDropDown = document.getElementById("cmPaymentDdl");
+  paymentMethodDropDown.addEventListener(
+    "change",
+    toggleTransactionForDropdown,
+  );
+  toggleTransactionForDropdown();
 });
 
 function validateDonorSelection() {
@@ -100,45 +132,50 @@ async function cmTotalCollectionBtnClick() {
   await getCollectionMasterDataAsync(devoteeNameCM);
   IsLoading(false);
 }
+
 // Function to run on page load
 async function initializeCollctionMasterPage(devName) {
-  IsLoading(true);
   const request = {
-    apiType: "GET_DONOR_NAME_LIST",
+    apiType: "",
     devName: devName,
   };
-  fetch(APPLICATION_URL, {
-    method: "POST",
-    body: JSON.stringify(request),
-  })
-    .then((apiResponse) => apiResponse.json())
-    .then((response) => {
-      IsLoading(false);
-      if (response.status) {
-        masterList = response.data;
 
-        initializedLiveSearchControl(
-          "cmrNameLiveSearch",
-          "cmrNameULList",
-          masterList,
-        );
+  const response = await CALL_API_WITH_CACHE("GET_DONOR_NAME_LIST", request);
+  populateCollectionInputForm(devName, response);
+}
 
-        masterList.unshift(devName);
-        initializedLiveSearchControl(
-          cmNameLiveSearch,
-          cmNameULList,
-          masterList,
-        );
-      } else {
-        SHOW_ERROR_POPUP(
-          "Something went wrong , Please contact to any NKD Servants",
-        );
-      }
-    })
-    .catch((ex) => {
-      console.log("Error - ", ex);
-      IsLoading(false);
-    });
+async function initializeCollctionMasterPageWithReload(isReload = false) {
+  const request = {
+    apiType: "",
+    devName: loginUserName,
+  };
+
+  const response = await CALL_API_WITH_CACHE(
+    "GET_DONOR_NAME_LIST",
+    request,
+    "",
+    isReload,
+  );
+  populateCollectionInputForm(loginUserName, response);
+}
+
+function populateCollectionInputForm(devName, response) {
+  if (response.status) {
+    masterList = response.data;
+
+    initializedLiveSearchControl(
+      "cmrNameLiveSearch",
+      "cmrNameULList",
+      masterList,
+    );
+
+    masterList.unshift(devName);
+    initializedLiveSearchControl(cmNameLiveSearch, cmNameULList, masterList);
+  } else {
+    SHOW_ERROR_POPUP(
+      "Something went wrong , Please contact to any NKD Servants",
+    );
+  }
 }
 
 function cmNewDonorBtnClick() {
@@ -171,7 +208,7 @@ function cmFetchFile() {
   }
 }
 
-function cmSubmitBtnClick() {
+async function cmSubmitBtnClick() {
   if (!validateDonorSelection()) return;
 
   const donorNameVal = GetControlValue(cmNameLiveSearch)
@@ -180,6 +217,10 @@ function cmSubmitBtnClick() {
     .trim();
   const amount = GetControlValue(cmAmountTxtBox);
   const paymentMethod = GetControlValue(cmPaymentDdl);
+  const transactionFor =
+    paymentMethod === "Cash"
+      ? document.getElementById("cmTransactionForDdl")?.value || ""
+      : "";
   const notes = GetControlValue(cmNotesTxtBox);
   const devoteeNameCM = localStorage.getItem(bheeshmUserNameLSKey);
   const devoteeFacNameCM = localStorage.getItem(bheeshmUserFacilitatorLSKey);
@@ -196,6 +237,10 @@ function cmSubmitBtnClick() {
     SHOW_ERROR_POPUP("Choose Payment Options");
     return;
   }
+  if (paymentMethod === "Cash" && !transactionFor) {
+    SHOW_ERROR_POPUP("Please select Transaction For when payment is Cash");
+    return;
+  }
   if (
     (paymentMethod == "NEFT" || paymentMethod == "Cheque") &&
     !selectedfile?.name
@@ -205,7 +250,6 @@ function cmSubmitBtnClick() {
     return;
   }
 
-  saveRequest.apiType = "SAVE_COLLECTION_MASTER_DATA";
   saveRequest.selectedFileType = selectedfile?.type;
   saveRequest.selectedFileName = selectedfile?.name;
   saveRequest.selectedFile64String = selectedFile64String;
@@ -219,27 +263,17 @@ function cmSubmitBtnClick() {
   saveRequest.screenshot = "";
   saveRequest.receiptsNo = "";
   saveRequest.notes = notes;
+  saveRequest.transactionFor = transactionFor;
   saveRequest.timestamp = DATE_UTC;
 
-  IsLoading(true);
-  fetch(APPLICATION_URL, {
-    method: "POST",
-    body: JSON.stringify(saveRequest),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      IsLoading(false);
-      if (data.status) {
-        SHOW_SUCCESS_POPUP("Data saved successfully!");
-        resetFormFields();
-      } else {
-        SHOW_ERROR_POPUP("Data not saved");
-      }
-    })
-    .catch((ex) => {
-      IsLoading(false);
-      console.log("Error - ", ex);
-    });
+  const response = await CALL_API("SAVE_COLLECTION_MASTER_DATA", saveRequest);
+
+  if (response?.status) {
+    resetFormFields();
+    SHOW_SUCCESS_POPUP("Data saved successfully!");
+  } else {
+    SHOW_ERROR_POPUP("Data not saved");
+  }
 }
 
 function resetFormFields() {
@@ -248,6 +282,32 @@ function resetFormFields() {
   ClearTextBoxValue(cmUploadControl);
   ClearTextBoxValue(cmNotesTxtBox);
   ClearDropdownValue(cmPaymentDdl);
+  ClearDropdownValue(cmTransactionForDdl);
+
+  const transactionForContainer = document.getElementById(
+    "cmTransactionForContainer",
+  );
+  const transactionForDropDown = document.getElementById("cmTransactionForDdl");
+
+  if (transactionForContainer) {
+    transactionForContainer.style.display = "none";
+  }
+
+  if (transactionForDropDown) {
+    transactionForDropDown.required = false;
+    transactionForDropDown.selectedIndex = 0;
+  }
+
+  selectedDonorName = "";
+  selectedRecurringDonorName = "";
+  selectedfile = "";
+  selectedFile64String = "";
+  selectedFileType = "";
+  selectedFileName = "";
+  saveRequest.transactionFor = "";
+  saveRequest.selectedFileType = "";
+  saveRequest.selectedFileName = "";
+  saveRequest.selectedFile64String = "";
 }
 
 function cmClearBtnClick() {
@@ -256,20 +316,12 @@ function cmClearBtnClick() {
 
 async function cmPedningDonorBtnClick() {
   const devoteeNameCM = localStorage.getItem(bheeshmUserNameLSKey);
-  const request = {
-    apiType: "GET_PENDING_DONOR_LIST",
-    devName: devoteeNameCM,
-  };
+  const response = await CALL_API_WITH_CACHE("GET_PENDING_DONOR_LIST", {});
+  debugger;
+  const responseUpdated = CONVERT_ROWS_TO_OBJECTS(response?.data);
+  console.log("Pending Donor List Response:", responseUpdated);
 
-  IsLoading(true);
   try {
-    const apiResponse = await fetch(APPLICATION_URL, {
-      method: "POST",
-      body: JSON.stringify(request),
-    });
-
-    const response = await apiResponse.json();
-    IsLoading(false); // Stop loading indicator
     if (response.status) {
       console.log(response.data);
       ShowPopup("cmPendingDonorContainer");
@@ -292,19 +344,8 @@ function cmPendingDonorContainerCancelClick() {
 }
 
 function preprocessPendingDonorData(data) {
-  debugger;
-  const updatedData = data.map((row) => {
-    return {
-      "Donor Name": row["Donor Name"],
-      "Last year amount": row["Last Year Collection"],
-      "Contact Number": row["Contact Number"],
-      Birthday: row.Birthday,
-    };
-  });
+  const sortedData = sortObjectByValue(data, "lastYearAmount");
 
-  const sortedData = sortObjectByValue(updatedData, "Last year amount");
-
-  console.log(sortedData);
   return sortedData;
 }
 

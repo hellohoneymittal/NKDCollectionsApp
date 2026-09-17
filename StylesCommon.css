@@ -150,6 +150,7 @@ body {
   text-align: center;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
   background-color: #f8d4ad;
+  min-height: 80%;
 }
 
 .popup-content h2,

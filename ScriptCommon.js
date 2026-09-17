@@ -728,6 +728,12 @@ function hideLiveSearchOnClick(inputCtrlId, ulListId) {
 }
 
 function setupLiveSearch(inputCtrlId, ulListId, callback) {
+  console.log(
+    "Setting up live search for input:",
+    inputCtrlId,
+    "and list:",
+    ulListId,
+  );
   const inputCtrl = document.getElementById(inputCtrlId);
 
   inputCtrl.addEventListener("keyup", function () {
@@ -2666,6 +2672,26 @@ function CONVERT_ROWS_TO_OBJECTS(data) {
     .map((row) =>
       Object.fromEntries(row.map((value, index) => [keys[index], value])),
     );
+}
+
+function FILTER_ROW_DATA(data, filters) {
+  if (!data || data.length === 0) return [];
+
+  const headers = data[0];
+  const rows = data.slice(1);
+
+  return [
+    headers,
+    ...rows.filter((row) => {
+      return Object.entries(filters).every(([columnName, expectedValue]) => {
+        const columnIndex = headers.indexOf(columnName);
+
+        if (columnIndex === -1) return false;
+
+        return row[columnIndex] == expectedValue;
+      });
+    }),
+  ];
 }
 
 /**
