@@ -1,18 +1,10 @@
 //api constant
 
-const GET_DONOR_NAME_LIST =
-  "https://script.google.com/macros/s/AKfycbx_pga1XERDEQSFqw9p-0JeFFzxvNi_sBVN4yPvurG3m7jrOY1mfDeWZ4t2NNEOhOG9ug/exec";
-const GET_DEVOTEE_INFO =
-  "https://script.google.com/macros/s/AKfycbx_pga1XERDEQSFqw9p-0JeFFzxvNi_sBVN4yPvurG3m7jrOY1mfDeWZ4t2NNEOhOG9ug/exec";
 const CHECK_PASSWORD_API =
   "https://script.google.com/macros/s/AKfycbw6xp8f4KopdloxGYNGQYWWEU6E_eM_-Zd6CrILLjBdUjPRF0o3LQow624rtsBOEhK9-w/exec?password=";
 const GET_COLLECTION_MASTER_DATA =
   "https://script.google.com/macros/s/AKfycbx_pga1XERDEQSFqw9p-0JeFFzxvNi_sBVN4yPvurG3m7jrOY1mfDeWZ4t2NNEOhOG9ug/exec?devName=";
-const SAVE_COLLECTION_MASTER_DATA =
-  "https://script.google.com/macros/s/AKfycbx_pga1XERDEQSFqw9p-0JeFFzxvNi_sBVN4yPvurG3m7jrOY1mfDeWZ4t2NNEOhOG9ug/exec";
-const SAVE_DONOR_MASTER_DATA =
-  "https://script.google.com/macros/s/AKfycbx_pga1XERDEQSFqw9p-0JeFFzxvNi_sBVN4yPvurG3m7jrOY1mfDeWZ4t2NNEOhOG9ug/exec";
-const GET_PENDING_DONOR_LIST =
+const APPLICATION_URL =
   "https://script.google.com/macros/s/AKfycbx_pga1XERDEQSFqw9p-0JeFFzxvNi_sBVN4yPvurG3m7jrOY1mfDeWZ4t2NNEOhOG9ug/exec";
 
 const API_TYPE_CONSTANT = {
@@ -63,3 +55,17 @@ const ERROR_MESSAGE_CONSTANT = {
 };
 
 const ExcelDate = getFormattedDateForDownload();
+
+const INDEX_DB = {
+  dbName: "NKDAppDB",
+  storeName: "NKDCollAppStore",
+
+  keys: {
+    LOGIN: "hostelAppLogin",
+    TASK_LIST: "taskListData",
+    TASK_MASTER: "taskMasterData",
+    USER_PROFILE: "userProfile",
+    SETTINGS: "settings",
+    APP_VERSION: "appVersion",
+  },
+};

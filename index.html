@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -81,23 +81,17 @@
             alt="Donation icon"
           />
 
-          <div class="popup-content" style="margin-top: 10px">
-            <label for="mainPasswordTxtBox" class="required">Password</label>
-            <input
-              type="text"
-              id="mainPasswordTxtBox"
-              placeholder="Enter text here..."
-            />
-            <div class="button-row">
-              <button class="red" id="pcClearBtn">Clear</button>
-              <button
-                class="green"
-                id="pcSubmitBtn"
-                onclick="pcSubmitBtnClick()"
-              >
-                Submit
-              </button>
-            </div>
+          <label for="mainPasswordTxtBox" class="required">Password</label>
+          <input
+            type="text"
+            id="mainPasswordTxtBox"
+            placeholder="Enter text here..."
+          />
+          <div class="button-row">
+            <button class="red" id="pcClearBtn">Clear</button>
+            <button class="green" id="pcSubmitBtn" onclick="pcSubmitBtnClick()">
+              Submit
+            </button>
           </div>
         </div>
       </div>
@@ -109,13 +103,27 @@
           <div class="navbar" id="navbarAdmin">
             <a
               href="#pendingA"
-              onclick="showNavBarSection(event, 'pendingA', 'adminContainer', 'navbarAdmin')"
+              onclick="
+                showNavBarSection(
+                  event,
+                  'pendingA',
+                  'adminContainer',
+                  'navbarAdmin',
+                )
+              "
               class="active"
               >Pending List</a
             >
             <a
               href="#collectionA"
-              onclick="showNavBarSection(event, 'collectionA', 'adminContainer', 'navbarAdmin')"
+              onclick="
+                showNavBarSection(
+                  event,
+                  'collectionA',
+                  'adminContainer',
+                  'navbarAdmin',
+                )
+              "
               >New Collection</a
             >
           </div>
@@ -190,7 +198,7 @@
       <div id="cmMainContainer">
         <div class="popup" id="collectionMasterContainer">
           <div class="popup-content scrollable-content">
-            <div class="popup-content">
+            <div>
               <span class="welcome-title">Welcome:</span>
               <span id="userNameLbl"></span>
             </div>
@@ -504,9 +512,9 @@
       </div>
     </div>
 
-    <script src="Script.js"></script>
     <script src="ScriptCommon.js"></script>
     <script src="ScriptConstants.js"></script>
+    <script src="Script.js"></script>
     <script src="ScriptCollectionMaster.js"></script>
     <script src="ScriptDonorMaster.js"></script>
     <script src="ScriptAdmin.js"></script>

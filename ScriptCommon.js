@@ -1,3 +1,44 @@
+function renderMenus(roleData) {
+  SHOW_BUTTON_BY_ADMIN_ROLE(
+    "gatePassApprovalBtn",
+    "Hostel Incharge Role",
+    roleData,
+  );
+
+  SHOW_SPECIFIC_DIV("menuPopup");
+  SET_USER_NAME_ON_SCREEN(selectedUser?.name);
+}
+
+async function LOAD_HTML_FILE(fileName, containerId = "popupContainer") {
+  try {
+    const container = document.getElementById(containerId);
+
+    const res = await fetch(fileName);
+
+    if (!res.ok) {
+      throw new Error("File not found: " + fileName);
+    }
+
+    const html = await res.text();
+
+    container.innerHTML += html;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function INIT_POPUPS() {
+  const files = [];
+
+  for (const file of files) {
+    await LOAD_HTML_FILE("Pages/" + file);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async function () {
+  await INIT_POPUPS();
+});
+
 function formatDuration(startTimestamp, endTimestamp) {
   // Calculate the difference in milliseconds
   const durationMs = endTimestamp - startTimestamp;
@@ -18,7 +59,7 @@ async function checkPassword(password) {
       .then((response) => {
         if (!response.ok) {
           throw new Error(
-            `Network response was not ok. Status: ${response.status} - ${response.statusText}`
+            `Network response was not ok. Status: ${response.status} - ${response.statusText}`,
           );
         }
         return response.json();
@@ -75,7 +116,7 @@ function ClearDropdownValue(id) {
 }
 
 function ClearDivValue(id) {
-  document.getElementById(id).textContent = "";
+  document.getElementById(id).innerText = "";
 }
 
 function IsLoading(status) {
@@ -100,11 +141,11 @@ function disabledButtonState(containerId, buttonId) {
 
   if (container && btnControl) {
     const contentEditableDiv = container.querySelector(
-      '[contenteditable="true"]'
+      '[contenteditable="true"]',
     );
 
     const requiredFields = container.querySelectorAll(
-      "input[required], textarea[required], select[required]"
+      "input[required], textarea[required], select[required]",
     );
     let allFilled = true;
     requiredFields.forEach((field) => {
@@ -137,7 +178,7 @@ function resetFormByFormId(formId) {
   if (form) {
     // Select all input, textarea, and select elements within the form
     const elements = form.querySelectorAll(
-      "input, textarea, select, [contenteditable='true']"
+      "input, textarea, select, [contenteditable='true']",
     );
 
     // Loop through each element and clear its value
@@ -169,7 +210,7 @@ function generatePassword(name) {
 
   const firstTwoLetters = name.substring(0, 2).toLowerCase(); // 2 letters
   const special = specialChars.charAt(
-    Math.floor(Math.random() * specialChars.length)
+    Math.floor(Math.random() * specialChars.length),
   ); // 1 special char
   const timePart = Date.now().toString().slice(-4); // Last 4 digits for high uniqueness
 
@@ -293,58 +334,74 @@ function formatTimeToAMPM(timestamp) {
 }
 //#endregion common method
 
-// Function to generate table rows based on server data
-function fillDynamicTableRows(data, headerId, bodyId) {
-  const tableHead = document.getElementById(headerId);
-  const tableBody = document.getElementById(bodyId);
+function SHOW_SUCCESS_POPUP(message, onClose) {
+  const popup = document.getElementById("successPopup");
+  const msg = document.getElementById("successMessage");
+  const closeBtn = document.getElementById("successOkButton");
 
-  // Clear any existing content
-  tableHead.innerHTML = "";
-  tableBody.innerHTML = "";
+  msg.innerHTML = message;
+  popup.style.display = "flex";
 
-  // Check if data is not empty
-  if (data.length === 0) return;
+  closeBtn.onclick = () => {
+    popup.style.display = "none";
 
-  // Generate the table header
-  const headerRow = document.createElement("tr");
-  // Use the keys from the first object as headers
-  const headers = Object.keys(data[0]);
-  headers.forEach((headerCell) => {
-    const th = document.createElement("th");
-    th.textContent = headerCell;
-    headerRow.appendChild(th);
-  });
-  tableHead.appendChild(headerRow);
-
-  // Generate the table rows
-  data.forEach((row) => {
-    const tr = document.createElement("tr");
-    headers.forEach((headerCell) => {
-      const td = document.createElement("td");
-      td.textContent = row[headerCell];
-      tr.appendChild(td);
-    });
-    tableBody.appendChild(tr);
-  });
-}
-
-function ClearTextBoxValue(id) {
-  document.getElementById(id).value = "";
-}
-
-function SHOW_SUCCESS_POPUP(message) {
-  document.getElementById("successMessage").textContent = message;
-  document.getElementById("successPopup").style.display = "flex";
+    // optional callback
+    onClose?.();
+  };
 }
 
 // Function to show the error popup
 function SHOW_ERROR_POPUP(message) {
-  document.getElementById("errorMessage").textContent = message;
+  document.getElementById("errorMessage").innerHTML = message;
   document.getElementById("errorPopup").style.display = "flex";
+}
+
+function SHOW_INFO_POPUP(message) {
+  document.getElementById("infoMessage").innerHTML = message;
+  document.getElementById("infoPopup").style.display = "flex";
 }
 
 function CLOSE_INFO_POPUP(popupId) {
   document.getElementById(popupId).style.display = "none";
+}
+
+function SHOW_CONFIRMATION_POPUP(
+  message,
+  yesCallback,
+  noCallback = CLOSE_CONFIRMATION_POPUP,
+) {
+  const popup = document.getElementById("confirmationPopup");
+  const popupMessage = document.getElementById("confirmationMessage");
+  const yesButton = document.getElementById("confirmationYesButton");
+  const noButton = document.getElementById("confirmationNoButton");
+
+  // Set the message dynamically
+  popupMessage.innerHTML = message;
+
+  // Assign event handlers dynamically
+  yesButton.onclick = () => {
+    yesCallback();
+    CLOSE_CONFIRMATION_POPUP();
+  };
+  noButton.onclick = () => {
+    noCallback();
+  };
+
+  // Show the popup
+  popup.style.display = "flex";
+}
+
+function CLOSE_CONFIRMATION_POPUP() {
+  document.getElementById("confirmationPopup").style.display = "none";
+}
+
+// Example YES and NO callbacks
+function handleYes() {
+  alert("You clicked YES");
+}
+
+function handleNo() {
+  alert("You clicked NO");
 }
 
 function sortObjectByValue(data, columnName) {
@@ -400,27 +457,6 @@ function exportTableToExcel(tableId, filename = "data.xlsx") {
   XLSX.writeFile(wb, filename);
 }
 
-function getFormattedDateForDownload() {
-  const today = new Date();
-  const day = today.getDate();
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  const month = monthNames[today.getMonth()];
-  return `${day}${daySuffix(day)}${month}`;
-}
-
 function daySuffix(day) {
   if (day >= 11 && day <= 13) return "th"; // Special case for 11th, 12th, and 13th
   switch (day % 10) {
@@ -435,10 +471,58 @@ function daySuffix(day) {
   }
 }
 
-async function API_HANDLER(body) {
+async function API_HANDLER_AXIOS(request) {
   try {
-    const url =
-      "https://script.google.com/macros/s/AKfycbx_pga1XERDEQSFqw9p-0JeFFzxvNi_sBVN4yPvurG3m7jrOY1mfDeWZ4t2NNEOhOG9ug/exec";
+    const url = APPLICATION_URL;
+    IsLoading(true); // Start loading
+
+    const jsonReq = JSON.stringify(request);
+    const response = await axios.post(url, jsonReq);
+    const data = response?.data;
+    IsLoading(false); // Stop loading
+
+    if (data?.status) {
+      return data; // Resolve the data to be used by the caller
+    } else {
+      console.log("Error - ", data);
+      SHOW_ERROR_POPUP(
+        "Something went wrong, please contact any NKD Servants.",
+      );
+    }
+  } catch (error) {
+    IsLoading(false); // Stop loading on error
+    console.log(error);
+    SHOW_ERROR_POPUP(error.message);
+  } finally {
+    IsLoading(false); // Stop loading regardless of success or error
+  }
+}
+
+async function API_HANDLER_WITHOUT_LOADING_AXIOS(request) {
+  try {
+    const url = APPLICATION_URL;
+
+    const jsonReq = JSON.stringify(request);
+    const response = await axios.post(url, jsonReq);
+    const data = response?.data;
+
+    if (data?.status) {
+      return data; // Resolve the data to be used by the caller
+    } else {
+      console.log("Error - ", data);
+      SHOW_ERROR_POPUP(
+        "Something went wrong, please contact any NKD Servants.",
+      );
+    }
+  } catch (error) {
+    console.log(error);
+    SHOW_ERROR_POPUP(error.message);
+  }
+}
+
+async function API_HANDLER(request) {
+  try {
+    const url = APPLICATION_URL;
     IsLoading(true); // Start loading
 
     const fetchOptions = {
@@ -447,7 +531,7 @@ async function API_HANDLER(body) {
       headers: {
         "Content-Type": "text/plain;charset=utf-8", // Specify content type
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(request),
       redirect: "follow",
     };
 
@@ -461,20 +545,58 @@ async function API_HANDLER(body) {
     } else {
       console.log("Error - ", data);
       SHOW_ERROR_POPUP(
-        "Something went wrong, please contact any NKD Servants."
+        "Something went wrong, please contact any NKD Servants.",
       );
     }
   } catch (error) {
     IsLoading(false); // Stop loading on error
     console.log(error);
     SHOW_ERROR_POPUP(error.message);
+  } finally {
+    IsLoading(false); // Stop loading regardless of success or error
   }
 }
 
-async function API_HANDLER_WITHOUT_LOADING(body) {
+async function API_HANDLER_WITH_APPLICATION_JSON_TYPE(request) {
   try {
-    const url =
-      "https://script.google.com/macros/s/AKfycbx_pga1XERDEQSFqw9p-0JeFFzxvNi_sBVN4yPvurG3m7jrOY1mfDeWZ4t2NNEOhOG9ug/exec";
+    const url = APPLICATION_URL;
+    IsLoading(true); // Start loading
+
+    const fetchOptions = {
+      redirect: "follow",
+      method: "POST",
+      //headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8", // Specify content type
+      },
+      body: JSON.stringify(request),
+    };
+
+    const response = await fetch(url, fetchOptions);
+    const data = await response.json();
+
+    IsLoading(false); // Stop loading
+
+    if (data?.status) {
+      return data; // Resolve the data to be used by the caller
+    } else {
+      console.log("Error - ", data);
+      SHOW_ERROR_POPUP(
+        "Something went wrong, please contact any NKD Servants.",
+      );
+    }
+  } catch (error) {
+    IsLoading(false); // Stop loading on error
+    console.log(error);
+    SHOW_ERROR_POPUP(error.message);
+  } finally {
+    IsLoading(false); // Stop loading regardless of success or error
+  }
+}
+
+async function API_HANDLER_WITHOUT_LOADING(request) {
+  try {
+    const url = APPLICATION_URL;
 
     const fetchOptions = {
       method: "POST",
@@ -482,7 +604,7 @@ async function API_HANDLER_WITHOUT_LOADING(body) {
       headers: {
         "Content-Type": "text/plain;charset=utf-8", // Specify content type
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(request),
       redirect: "follow",
     };
 
@@ -494,12 +616,40 @@ async function API_HANDLER_WITHOUT_LOADING(body) {
     } else {
       console.log("Error - ", data);
       SHOW_ERROR_POPUP(
-        "Something went wrong, please contact any NKD Servants."
+        "Something went wrong, please contact any NKD Servants.",
       );
     }
   } catch (error) {
     console.log(error);
     SHOW_ERROR_POPUP(error.message);
+  }
+}
+
+async function API_HANDLER_GET(request) {
+  try {
+    const url = APPLICATION_URL;
+    IsLoading(true); // Start loading
+
+    const queryString = new URLSearchParams(request).toString();
+    const fullUrl = `${url}?${queryString}`;
+    const response = await fetch(fullUrl);
+    const data = await response.json();
+    IsLoading(false);
+
+    if (data?.status) {
+      return data; // Resolve the data to be used by the caller
+    } else {
+      console.log("Error - ", data);
+      SHOW_ERROR_POPUP(
+        "Something went wrong, please contact any NKD Servants.",
+      );
+    }
+  } catch (error) {
+    IsLoading(false); // Stop loading on error
+    console.log(error);
+    SHOW_ERROR_POPUP(error.message);
+  } finally {
+    IsLoading(false); // Stop loading regardless of success or error
   }
 }
 
@@ -510,17 +660,30 @@ function SHOW_SPECIFIC_DIV(divId) {
   // Hide all popups by setting display to 'none'
   allPopups.forEach((popup) => {
     popup.style.display = "none";
-
-    const textboxes = popup.querySelectorAll('input[type="text"]');
-    textboxes.forEach((textbox) => {
-      textbox.value = ""; // Clear the value of the textbox
-    });
   });
 
   // Show the specific div with the provided divId
   const targetDiv = document.getElementById(divId);
   if (targetDiv) {
     targetDiv.style.display = "flex"; // Adjust display style as per need
+  } else {
+    console.error(`Div with id '${divId}' not found.`);
+  }
+}
+
+function SHOW_SPECIFIC_DIV_WITH_BLOCK(divId) {
+  // Select all divs with class 'popup'
+  const allPopups = document.querySelectorAll(".popup");
+
+  // Hide all popups by setting display to 'none'
+  allPopups.forEach((popup) => {
+    popup.style.display = "none";
+  });
+
+  // Show the specific div with the provided divId
+  const targetDiv = document.getElementById(divId);
+  if (targetDiv) {
+    targetDiv.style.display = "block"; // Adjust display style as per need
   } else {
     console.error(`Div with id '${divId}' not found.`);
   }
@@ -623,11 +786,71 @@ function showNavBarSection(event, sectionId, containerId, navbarId) {
   event.target.classList.add("active");
 }
 
+function editTableRow(button) {
+  const row = button.parentElement.parentElement;
+  const cells = row.querySelectorAll("td");
+
+  // If button text is "Edit", convert cells into input fields
+  if (button.textContent === "Edit") {
+    for (let i = 0; i < cells.length - 1; i++) {
+      const currentValue = cells[i].textContent;
+      cells[i].innerHTML = `<input type="text" value="${currentValue}" />`;
+    }
+    button.textContent = "Save";
+  }
+  // If button text is "Save", update the cells with new values
+  else if (button.textContent === "Save") {
+    for (let i = 0; i < cells.length - 1; i++) {
+      const inputField = cells[i].querySelector("input");
+      cells[i].textContent = inputField.value;
+    }
+    button.textContent = "Edit";
+  }
+}
+
+function restrictToNumberWithDecimal(input) {
+  const invalidCharacters = input.value.match(/[^0-9.]/g); // Find invalid characters
+
+  if (invalidCharacters) {
+    SHOW_ERROR_POPUP(`Invalid input: ${invalidCharacters.join("")}`); // Show alert with invalid characters
+  }
+
+  // Remove all characters that are not digits or a single decimal point
+  input.value = input.value.replace(/[^0-9.]/g, "");
+
+  // Ensure only one decimal point is allowed
+  if ((input.value.match(/\./g) || []).length > 1) {
+    input.value = input.value.slice(0, -1); // Remove the extra decimal point
+  }
+}
+
+function restrictToNumberWithDecimalAndNegative(input) {
+  const invalidCharacters = input.value.match(/[^0-9.-]/g); // Allow digits, a decimal, and a minus sign
+
+  if (invalidCharacters) {
+    SHOW_ERROR_POPUP(`Invalid input: ${invalidCharacters.join("")}`); // Show alert with invalid characters
+  }
+
+  // Remove all characters that are not digits, a single decimal point, or a leading minus sign
+  input.value = input.value.replace(/[^0-9.-]/g, "");
+
+  // Ensure only one decimal point is allowed
+  let parts = input.value.split(".");
+  if (parts.length > 2) {
+    input.value = parts[0] + "." + parts.slice(1).join("").replace(/\./g, ""); // Keep only the first decimal point
+  }
+
+  // Ensure only one leading minus sign is allowed
+  if (input.value.includes("-")) {
+    input.value = "-" + input.value.replace(/-/g, ""); // Keep minus sign only at the start
+  }
+}
+
 function setupKeyPressHandler(
   containerId,
   buttonId,
   validKeys,
-  modifiers = {}
+  modifiers = {},
 ) {
   document.addEventListener("keydown", function (event) {
     const key = event.key === " " ? "Space" : event.key;
@@ -666,36 +889,6 @@ function setupKeyPressHandler(
   });
 }
 
-function SHOW_CONFIRMATION_POPUP(
-  message,
-  yesCallback,
-  noCallback = CLOSE_CONFIRMATION_POPUP
-) {
-  const popup = document.getElementById("confirmationPopup");
-  const popupMessage = document.getElementById("confirmationMessage");
-  const yesButton = document.getElementById("confirmationYesButton");
-  const noButton = document.getElementById("confirmationNoButton");
-
-  // Set the message dynamically
-  popupMessage.textContent = message;
-
-  // Assign event handlers dynamically
-  yesButton.onclick = () => {
-    yesCallback();
-    CLOSE_CONFIRMATION_POPUP();
-  };
-  noButton.onclick = () => {
-    noCallback();
-  };
-
-  // Show the popup
-  popup.style.display = "flex";
-}
-
-function CLOSE_CONFIRMATION_POPUP() {
-  document.getElementById("confirmationPopup").style.display = "none";
-}
-
 function SHOW_CONFIRMATION_GRID_POPUP(
   gridData,
   columnNames, // Array of objects containing both display name and actual name [ { displayName: "Item", actualName: "Item" },]
@@ -703,14 +896,14 @@ function SHOW_CONFIRMATION_GRID_POPUP(
   yesLabel = "Yes",
   noLabel = "No",
   statusText = "",
-  noCallback = CLOSE_CONFIRMATION_GRID_POPUP
+  noCallback = CLOSE_CONFIRMATION_GRID_POPUP,
 ) {
   const popup = document.getElementById("confirmationGridPopup");
   const gridContainer = document.getElementById("confirmationGridContainer");
   const yesButton = document.getElementById("confirmationGridYesButton");
   const noButton = document.getElementById("confirmationGridNoButton");
   const statusTextElement = document.getElementById(
-    "confirmationGridStatusText"
+    "confirmationGridStatusText",
   );
 
   // Set custom button labels
@@ -782,15 +975,2327 @@ function CLOSE_CONFIRMATION_GRID_POPUP() {
   document.getElementById("confirmationGridPopup").style.display = "none";
 }
 
-function ConvertDateToSpecificFormat(
-  dateString,
-  format = "DD MMM YYYY HH:mm A"
+function PARSE_STRING_TO_DATE_FORMAT(stringDate, desireFormat = "DD-MMM-YYYY") {
+  const parsedDate = moment(
+    stringDate,
+    ["YYYY-MM-DD", "DD/MM/YYYY", "MM-DD-YYYY", "DD-MMM-YYYY", "D-MMM-YYYY"],
+    true,
+  );
+
+  if (parsedDate.isValid()) {
+    const formattedDate = parsedDate.format(desireFormat);
+    return formattedDate;
+  } else {
+    console.error("Invalid date format:", stringDate);
+    return null;
+  }
+}
+
+async function IS_ONLINE() {
+  try {
+    IsLoading(true); // Start loading indicator
+
+    const response = await fetch("https://www.cloudflare.com/cdn-cgi/trace", {
+      cache: "no-store",
+    });
+
+    IsLoading(false); // Stop loading indicator
+    return response.ok;
+  } catch (error) {
+    IsLoading(false);
+    SHOW_ERROR_POPUP(
+      "Please check your internet connection, it is not working.",
+    );
+    return false;
+  }
+}
+
+function formatNumber(value) {
+  if (!isNaN(value) && value !== null && value !== "") {
+    const num = parseFloat(value);
+    return Number.isInteger(num) ? num : parseFloat(num.toFixed(2));
+  }
+
+  return null;
+}
+
+function CREATE_MULTI_SELECT_DROPDOWN({
+  containerId,
+  title,
+  options,
+  callback,
+}) {
+  const container = document.getElementById(containerId);
+
+  if (!container) {
+    console.error("Container not found!");
+    return;
+  }
+
+  // Create dropdown elements
+  const dropdown = document.createElement("div");
+  dropdown.classList.add("dynamic-dropdown");
+
+  const dropdownBtn = document.createElement("div");
+  dropdownBtn.classList.add("dynamic-dropdown-btn");
+  dropdownBtn.innerText = title;
+  dropdownBtn.onclick = () => {
+    dropdownContent.style.display =
+      dropdownContent.style.display === "block" ? "none" : "block";
+  };
+
+  const dropdownContent = document.createElement("div");
+  dropdownContent.classList.add("dynamic-dropdown-content");
+
+  options.forEach((item) => {
+    let label = document.createElement("label");
+    label.innerHTML = `<input type="checkbox" value="${item}"> ${item}`;
+    dropdownContent.appendChild(label);
+  });
+
+  dropdown.appendChild(dropdownBtn);
+  dropdown.appendChild(dropdownContent);
+  container.appendChild(dropdown);
+
+  // Handle selection update
+  function updateSelection() {
+    let selected = [];
+    dropdownContent
+      .querySelectorAll("input[type='checkbox']")
+      .forEach((checkbox) => {
+        if (checkbox.checked) {
+          selected.push(checkbox.value);
+        }
+      });
+    dropdownBtn.innerText = selected.length
+      ? `Selected Item - ${selected.length}`
+      : title;
+    callback(selected);
+  }
+
+  // Event listeners
+  dropdownContent.addEventListener("click", (event) => {
+    if (event.target.tagName === "INPUT") {
+      updateSelection();
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!dropdown.contains(event.target)) {
+      dropdownContent.style.display = "none";
+    }
+  });
+}
+
+function UPDATE_MULTI_SELECT_DROPDOWN(containerId, newOptions, callback) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const dropdownContent = container.querySelector(".dynamic-dropdown-content");
+  const dropdownBtn = container.querySelector(".dynamic-dropdown-btn");
+
+  if (!dropdownContent || !dropdownBtn) return;
+
+  // Clear existing options
+  dropdownContent.innerHTML = "";
+
+  // Add new options dynamically
+  newOptions.forEach((item) => {
+    let label = document.createElement("label");
+    let checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = item;
+
+    checkbox.onclick = function () {
+      let selected = [];
+      container
+        .querySelectorAll("input[type='checkbox']:checked")
+        .forEach((cb) => {
+          selected.push(cb.value);
+        });
+
+      dropdownBtn.innerText = selected.length
+        ? `Selected Item - ${selected.length}`
+        : "Select Chapter";
+
+      if (callback) callback(selected);
+    };
+
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(` ${item}`));
+    dropdownContent.appendChild(label);
+  });
+}
+
+function DISABLED_OLD_DATES(controlId) {
+  let today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+  document.getElementById(controlId).setAttribute("min", today);
+}
+
+async function CALL_API(apiType, data) {
+  const onlineRes = await IS_ONLINE();
+  if (onlineRes) {
+    const request = {
+      apiType: apiType,
+      inputData: data,
+    };
+    try {
+      const response = await API_HANDLER(request);
+      if (response) {
+        return response;
+        //
+      } else {
+        SHOW_ERROR_POPUP("Something Went Wrong");
+      }
+    } catch (ex) {
+      SHOW_ERROR_POPUP("Error :- " + ex);
+    }
+  }
+}
+
+async function CALL_API_WITHOUT_LOADING(apiType, data) {
+  const onlineRes = await IS_ONLINE();
+  if (onlineRes) {
+    const request = {
+      apiType: apiType,
+      inputData: data,
+    };
+    try {
+      const response = await API_HANDLER_WITHOUT_LOADING_AXIOS(request);
+      if (response) {
+        return response;
+        //
+      } else {
+        SHOW_ERROR_POPUP("Something Went Wrong");
+      }
+    } catch (ex) {
+      SHOW_ERROR_POPUP("Error :- " + ex);
+    }
+  }
+}
+
+async function CALL_API_WITH_CACHE(
+  apiType,
+  inputData = {},
+  cacheHours = null,
+  forceRefresh = false,
 ) {
+  if (!forceRefresh) {
+    const cachedResponse = await DB_GET(
+      apiType,
+      INDEX_DB.dbName,
+      INDEX_DB.storeName,
+    );
+
+    if (cachedResponse) {
+      console.log(`Cache Hit : ${apiType}`);
+      return cachedResponse;
+    }
+  }
+
+  console.log(`Cache Miss : ${apiType}`);
+
+  const response = await CALL_API(apiType, inputData);
+
+  if (response) {
+    await DB_SET(
+      apiType, // cache key = apiType
+      response,
+      INDEX_DB.dbName,
+      INDEX_DB.storeName,
+      cacheHours,
+    );
+  }
+
+  return response;
+}
+
+function POPULATE_CHECK_BOX_ON_PAGE(
+  containerId,
+  itemsArray,
+  isTwoOption,
+  yesOptionLabel,
+  noOptionLabel,
+  sectionTitle,
+) {
+  const container = document.getElementById(containerId);
+  if (!container) {
+    console.error(`No element found with ID "${containerId}"`);
+    return;
+  }
+  container.innerHTML = "";
+
+  const checklist = document.createElement("div");
+  checklist.classList.add("checklist");
+
+  itemsArray.forEach((item, idx) => {
+    const itemDiv = document.createElement("div");
+    itemDiv.classList.add("checklist-item");
+    itemDiv.style.cursor = "pointer";
+
+    if (!isTwoOption) {
+      // Single‑checkbox mode:
+      const wrapper = document.createElement("label");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.name = `${sectionTitle}-${idx}`;
+      const txtSpan = document.createElement("span");
+      txtSpan.innerText = " " + item;
+
+      wrapper.appendChild(cb);
+
+      if (yesOptionLabel)
+        wrapper.appendChild(document.createTextNode(yesOptionLabel));
+      wrapper.appendChild(txtSpan);
+
+      txtSpan.addEventListener("click", () => {
+        cb.checked = !cb.checked;
+      });
+
+      // row‑click toggles
+      itemDiv.addEventListener("click", (e) => {
+        if (e.target !== cb) cb.checked = !cb.checked;
+      });
+      cb.addEventListener("click", (e) => e.stopPropagation());
+
+      itemDiv.appendChild(wrapper);
+    } else {
+      // Two‑radio mode:
+      const textLabel = document.createElement("div");
+      textLabel.classList.add("checklist-label");
+      textLabel.innerText = item;
+      itemDiv.appendChild(textLabel);
+
+      const respDiv = document.createElement("div");
+      respDiv.classList.add("response-options");
+
+      const groupName = `${sectionTitle}-${idx}`;
+
+      // Yes radio
+      const yesWrapper = document.createElement("label");
+      yesWrapper.classList.add("yes-label");
+      const yesRb = document.createElement("input");
+      yesRb.type = "radio";
+      yesRb.name = groupName;
+      yesRb.value = "yes";
+      yesWrapper.appendChild(yesRb);
+      if (yesOptionLabel)
+        yesWrapper.appendChild(document.createTextNode(yesOptionLabel));
+
+      // No radio
+      const noWrapper = document.createElement("label");
+      noWrapper.classList.add("no-label");
+      const noRb = document.createElement("input");
+      noRb.type = "radio";
+      noRb.name = groupName;
+      noRb.value = "no";
+      noWrapper.appendChild(noRb);
+      if (noOptionLabel)
+        noWrapper.appendChild(document.createTextNode(noOptionLabel));
+
+      // Row‑click toggles “yes”
+      itemDiv.addEventListener("click", (e) => {
+        if (e.target === noRb) return; // if user clicked “no” itself, let it happen
+        if (e.target === yesRb) return; // allow normal radio click
+      });
+      yesRb.addEventListener("click", (e) => e.stopPropagation());
+      noRb.addEventListener("click", (e) => e.stopPropagation());
+
+      respDiv.appendChild(yesWrapper);
+      respDiv.appendChild(noWrapper);
+      itemDiv.appendChild(respDiv);
+    }
+
+    checklist.appendChild(itemDiv);
+  });
+
+  container.appendChild(checklist);
+}
+
+function formatDateToDDMMMYYYY(date) {
+  const day = String(date.getDate()).padStart(2, "0"); // Ensures two-digit day
+  const month = date.toLocaleString("en-US", { month: "short" }); // Gets abbreviated month name
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+function convertToAMPMFormat(time24) {
+  const [hourStr, minute] = time24.toString().split(":");
+  let hour = parseInt(hourStr, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12; // Convert '0' to '12'
+  const hourFormatted = hour.toString().padStart(2, "0");
+  return `${hourFormatted}:${minute} ${ampm}`;
+}
+
+//Nab bar method start
+function openLeftNavBar(leftSideNavId, menuLabel) {
+  let nav = document.getElementById(leftSideNavId);
+  let menuBtn = document.querySelector(".leftSideNav-menuBtn");
+
+  if (nav) {
+    nav.style.display = "block";
+
+    // Screen width ke hisaab se sidebar ka width set karein
+    if (window.innerWidth <= 768) {
+      // Mobile devices ke liye (width 768px ya usse kam ho)
+      nav.style.width = "30%";
+    } else {
+      // Laptop ya bade screens ke liye
+      nav.style.width = "13%";
+    }
+
+    menuBtn.innerHTML = "× NKD Community"; // Text ko update karo
+    menuBtn.setAttribute(
+      "onclick",
+      `closeLeftNavBar('${leftSideNavId}', '${menuLabel}')`,
+    );
+  }
+}
+
+function closeLeftNavBar(leftSideNavId, menuLabel) {
+  let nav = document.getElementById(leftSideNavId);
+  let menuBtn = document.querySelector(".leftSideNav-menuBtn");
+
+  if (nav) {
+    nav.style.width = "0"; // Sidebar ko close karo
+    nav.style.display = "none";
+    menuBtn.innerHTML = `☰ ${menuLabel}`; // Wapas original text me badlo
+    menuBtn.setAttribute(
+      "onclick",
+      `openLeftNavBar('${leftSideNavId}', '${menuLabel}')`,
+    );
+  }
+}
+
+function showLeftNavBarItemContainer(
+  formId,
+  leftSideNavId,
+  leftSideNavItemContainerId,
+  menuLabel,
+  callBack,
+) {
+  document
+    .querySelectorAll(`.${leftSideNavItemContainerId}`)
+    .forEach((form) => {
+      form.style.display = "none";
+    });
+
+  document.getElementById(formId).style.display = "block";
+  closeLeftNavBar(leftSideNavId, menuLabel);
+
+  if (typeof callBack === "function") {
+    callBack(formId);
+  }
+}
+
+function toggleLeftNavBarSubMenu(submenuId) {
+  let leftSideNavSubMenu = document.getElementById(submenuId);
+  let parentLink = document.querySelector(`a[href="#${submenuId}"]`);
+
+  if (leftSideNavSubMenu.style.display === "block") {
+    leftSideNavSubMenu.style.display = "none";
+    parentLink.innerHTML = parentLink.innerHTML.replace("▲", "▼");
+  } else {
+    leftSideNavSubMenu.style.display = "block";
+    parentLink.innerHTML = parentLink.innerHTML.replace("▼", "▲");
+  }
+}
+//nav bar method end
+
+function getTodayDayName() {
+  return new Date().toLocaleDateString("en-US", { weekday: "long" });
+}
+
+function getCurrentTimeString() {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, "0");
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
+function parseTimeToMinutes(timeStr) {
+  const [hours, minutes] = timeStr.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+const DB_VERSION = 1;
+
+function DB_OPEN_INTERNAL(dbName = "AppDB", storeName = "store") {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(dbName, DB_VERSION);
+
+    request.onupgradeneeded = function (event) {
+      const db = event.target.result;
+      const transaction = event.target.transaction;
+
+      // Create store if it does not exist
+      if (!db.objectStoreNames.contains(storeName)) {
+        db.createObjectStore(storeName, { keyPath: "id" });
+      } else {
+        // DB_VERSION changed → remove all old data
+        transaction.objectStore(storeName).clear();
+      }
+    };
+
+    request.onsuccess = function (event) {
+      const db = event.target.result;
+
+      if (!db.objectStoreNames.contains(storeName)) {
+        db.close();
+
+        const deleteRequest = indexedDB.deleteDatabase(dbName);
+
+        deleteRequest.onsuccess = function () {
+          const reopenRequest = indexedDB.open(dbName, DB_VERSION);
+
+          reopenRequest.onupgradeneeded = function (event) {
+            const newDb = event.target.result;
+
+            if (!newDb.objectStoreNames.contains(storeName)) {
+              newDb.createObjectStore(storeName, { keyPath: "id" });
+            }
+          };
+
+          reopenRequest.onsuccess = function (event) {
+            resolve(event.target.result);
+          };
+
+          reopenRequest.onerror = function () {
+            reject(new Error("Failed to recreate IndexedDB"));
+          };
+        };
+
+        deleteRequest.onerror = function () {
+          reject(new Error("Failed to reset IndexedDB"));
+        };
+
+        return;
+      }
+
+      resolve(db);
+    };
+
+    request.onerror = function () {
+      reject(request.error || new Error("IndexedDB error"));
+    };
+  });
+}
+
+// Save or update data in given store
+async function DB_SET(
+  storeKey,
+  data,
+  dbName = "AppDB",
+  storeName = "store",
+  expiryHours = null,
+) {
+  const db = await DB_OPEN_INTERNAL(dbName, storeName);
+
+  if (!db.objectStoreNames.contains(storeName)) {
+    throw new Error(
+      `IndexedDB store '${storeName}' not found in database '${dbName}'`,
+    );
+  }
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    const store = tx.objectStore(storeName);
+
+    store.put({
+      id: storeKey,
+      data,
+      expiresAt:
+        expiryHours !== null && expiryHours !== undefined
+          ? Date.now() + expiryHours * 60 * 60 * 1000
+          : null,
+    });
+
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}
+
+async function DB_GET(storeKey, dbName = "AppDB", storeName = "store") {
+  const db = await DB_OPEN_INTERNAL(dbName, storeName);
+
+  if (!db.objectStoreNames.contains(storeName)) {
+    throw new Error(
+      `IndexedDB store '${storeName}' not found in database '${dbName}'`,
+    );
+  }
+
+  return new Promise((resolve) => {
+    const tx = db.transaction(storeName, "readonly");
+    const store = tx.objectStore(storeName);
+    const request = store.get(storeKey);
+
+    request.onsuccess = async function () {
+      const record = request.result;
+
+      if (!record) {
+        resolve(null);
+        return;
+      }
+
+      if (record.expiresAt && Date.now() > record.expiresAt) {
+        await DB_DELETE(storeKey, dbName, storeName);
+        resolve(null);
+        return;
+      }
+
+      resolve(record.data);
+    };
+
+    request.onerror = function () {
+      resolve(null);
+    };
+  });
+}
+
+// Delete data from store by key
+async function DB_DELETE(storeKey, dbName = "AppDB", storeName = "store") {
+  const db = await DB_OPEN_INTERNAL(dbName, storeName);
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    const store = tx.objectStore(storeName);
+
+    store.delete(storeKey);
+
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}
+
+async function DB_CLEAR(dbName = "AppDB", storeName = "store") {
+  const db = await DB_OPEN_INTERNAL(dbName, storeName);
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    const store = tx.objectStore(storeName);
+
+    store.clear();
+
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}
+
+function SHOW_BUTTON_BY_ADMIN_ROLE(buttonId, roleKey, roleObj) {
+  const button = document.getElementById(buttonId);
+  if (!button) return;
+
+  const userRoleValue = roleObj?.[roleKey]?.toString().trim().toLowerCase();
+
+  if (userRoleValue && userRoleValue.includes("admin")) {
+    button.style.display = "inline-block";
+  } else {
+    button.style.display = "none";
+  }
+}
+
+function CREATE_MULTI_SELECT_DROPDOWN_WITH_CATEGORY_WITH_KEYFILTER({
+  containerId,
+  title,
+  data,
+  callback,
+  controls = {},
+  keyFilters = {},
+}) {
+  const {
+    showSelectAll = false,
+    showFilters = false,
+    showCategoryView = true,
+    selectionLimit = null,
+    showDataBasedOnFilters = false,
+  } = controls;
+
+  const showCategoryToggle = true;
+
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const dropdown = document.createElement("div");
+  dropdown.classList.add("dynamic-dropdown");
+
+  const dropdownBtn = document.createElement("div");
+  dropdownBtn.classList.add("dynamic-dropdown-btn");
+  dropdownBtn.innerText = title;
+
+  const dropdownContent = document.createElement("div");
+  dropdownContent.classList.add("dynamic-dropdown-content");
+
+  dropdownContent.style.display = "block"; // default open
+
+  dropdownBtn.onclick = () => {
+    dropdownContent.style.display =
+      dropdownContent.style.display === "block" ? "none" : "block";
+  };
+
+  // =============================
+  // SEARCH
+  // =============================
+  const searchWrapper = document.createElement("div");
+  searchWrapper.classList.add("dropdown-search-wrapper");
+
+  const searchBox = document.createElement("input");
+  searchBox.classList.add("dropdown-search-box");
+  searchBox.placeholder = "Search...";
+
+  const clearBtn = document.createElement("span");
+  clearBtn.innerHTML = "✖";
+  clearBtn.classList.add("dropdown-clear-search-btn");
+
+  searchWrapper.appendChild(searchBox);
+  searchWrapper.appendChild(clearBtn);
+  dropdownContent.appendChild(searchWrapper);
+
+  // =============================
+  // CONTROL BAR
+  // =============================
+  function setActiveFilter(activeBtn) {
+    [btnAll, btnSelected, btnPending].forEach((btn) => {
+      if (btn) btn.classList.remove("active-filter");
+    });
+    if (activeBtn) activeBtn.classList.add("active-filter");
+  }
+
+  const controlBar = document.createElement("div");
+  controlBar.classList.add("dropdown-controlBar");
+  controlBar.style.display = !showSelectAll && !showFilters ? "none" : "flex";
+  controlBar.style.gap = "8px";
+  let categoryWiseCheckbox;
+
+  let selectAllCheckbox;
+
+  if (showSelectAll) {
+    const label = document.createElement("label");
+    label.htmlFor = "dynamicDropdownSelectAll_" + containerId; // unique id
+
+    selectAllCheckbox = document.createElement("input");
+    selectAllCheckbox.type = "checkbox";
+    selectAllCheckbox.id = "dynamicDropdownSelectAll_" + containerId; // bind only this label
+
+    label.appendChild(selectAllCheckbox);
+    label.appendChild(document.createTextNode("Select All"));
+
+    controlBar.appendChild(label);
+  }
+
+  if (showCategoryToggle) {
+    const switchLabel = document.createElement("label");
+    switchLabel.classList.add("dynamic-dropdown-switch-label-inline");
+    switchLabel.htmlFor = "dynamicDropdownCategory_" + containerId; // unique id
+
+    categoryWiseCheckbox = document.createElement("input");
+    categoryWiseCheckbox.type = "checkbox";
+    categoryWiseCheckbox.checked = showCategoryView;
+    categoryWiseCheckbox.id = "dynamicDropdownCategory_" + containerId; // bind only this
+    categoryWiseCheckbox.classList.add("dynamic-dropdown-switch-input");
+
+    const slider = document.createElement("span");
+    slider.classList.add("dynamic-dropdown-switch-slider");
+
+    const text = document.createElement("span");
+    text.classList.add("dynamic-dropdown-switch-text");
+    text.innerText = "Category Wise";
+
+    switchLabel.appendChild(categoryWiseCheckbox);
+    switchLabel.appendChild(slider);
+    switchLabel.appendChild(text);
+
+    controlBar.appendChild(switchLabel);
+  }
+
+  let btnAll, btnSelected, btnPending;
+
+  if (showFilters) {
+    btnAll = document.createElement("button");
+    btnAll.innerText = "All";
+
+    btnSelected = document.createElement("button");
+    btnSelected.innerText = "Selected";
+
+    btnPending = document.createElement("button");
+    btnPending.innerText = "Pending";
+
+    controlBar.appendChild(btnAll);
+    controlBar.appendChild(btnSelected);
+    controlBar.appendChild(btnPending);
+  }
+
+  // =============================
+  // EXPAND / COLLAPSE ALL BUTTON
+  // =============================
+  let expandCollapseBtn = document.createElement("button");
+  expandCollapseBtn.innerHTML = "Collapse All ⯈";
+  expandCollapseBtn.classList.add("expand-collapse-btn");
+
+  let isAllExpanded = true;
+
+  expandCollapseBtn.onclick = () => {
+    const allItems = dropdownContent.querySelectorAll(
+      ".dropdown-category-items",
+    );
+    const allIcons = dropdownContent.querySelectorAll(
+      ".dropdown-category-icon",
+    );
+
+    isAllExpanded = !isAllExpanded;
+
+    allItems.forEach((div) => {
+      div.style.display = isAllExpanded ? "block" : "none";
+    });
+
+    allIcons.forEach((icon) => {
+      icon.style.transform = isAllExpanded ? "rotate(180deg)" : "rotate(0deg)";
+    });
+
+    expandCollapseBtn.innerHTML = isAllExpanded
+      ? "Collapse All ⯈"
+      : "Expand All ⯆";
+  };
+
+  controlBar.appendChild(expandCollapseBtn);
+  dropdownContent.appendChild(controlBar);
+
+  // =============================
+  // 🔥 KEY FILTER UI (SAFE ADD)
+  // =============================
+  function applyKeyFilters() {
+    searchBox.dispatchEvent(new Event("keyup")); // 🔥 reuse search logic
+  }
+
+  const activeKeyFilters = {};
+
+  const keyFilterWrapper = document.createElement("div");
+  keyFilterWrapper.classList.add("dropdown-keyfilters");
+
+  function formatLabel(key) {
+    return key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
+  }
+
+  if (Object.keys(keyFilters || {}).length) {
+    Object.keys(keyFilters).forEach((key) => {
+      const row = document.createElement("div");
+      row.classList.add("keyfilter-row");
+
+      const title = document.createElement("div");
+      title.classList.add("keyfilter-title-inline");
+      title.innerText = formatLabel(key);
+
+      const options = document.createElement("div");
+      options.classList.add("keyfilter-options-inline");
+
+      activeKeyFilters[key] = new Set();
+
+      keyFilters[key].forEach((val) => {
+        const label = document.createElement("label");
+        label.classList.add("keyfilter-chip");
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+
+        const actualValue = val.replace(/\s*\(\d+\)\s*$/, "").trim();
+
+        cb.value = actualValue;
+
+        cb.onchange = () => {
+          if (cb.checked) activeKeyFilters[key].add(actualValue);
+          else activeKeyFilters[key].delete(actualValue);
+
+          applyKeyFilters();
+        };
+
+        const span = document.createElement("span");
+        span.innerText = val; // UI shows Parent (13)
+
+        label.append(cb, span);
+        options.appendChild(label);
+      });
+
+      row.append(title, options);
+      keyFilterWrapper.appendChild(row);
+    });
+
+    dropdownContent.appendChild(keyFilterWrapper);
+  }
+
+  ADD_COPY_LIST_BUTTON(dropdownContent, keyFilterWrapper);
+
+  const categories = Object.keys(data || {});
+
+  // =============================
+  // CATEGORY LOOP (UPDATED)
+  // =============================
+  categories.forEach((category) => {
+    const catDiv = document.createElement("div");
+
+    const catHeader = document.createElement("div");
+    catHeader.classList.add("dropdown-category-header");
+
+    const text = document.createElement("span");
+    text.classList.add("dropdown-category-text");
+
+    const totalCount = data[category].length;
+    text.innerText = `${category} (0 / ${totalCount})`;
+
+    const icon = document.createElement("span");
+    icon.classList.add("dropdown-category-icon");
+    icon.innerHTML = "▾";
+
+    catHeader.appendChild(text);
+    catHeader.appendChild(icon);
+
+    const catItems = document.createElement("div");
+    catItems.classList.add("dropdown-category-items");
+    catItems.style.display = "block";
+    icon.style.transform = "rotate(180deg)";
+
+    catHeader.onclick = () => {
+      const isOpen = catItems.style.display === "block";
+      catItems.style.display = isOpen ? "none" : "block";
+      icon.style.transform = isOpen ? "rotate(0deg)" : "rotate(180deg)";
+    };
+
+    data[category].forEach((item) => {
+      let tooltipText = "";
+      let label = document.createElement("label");
+      label.classList.add("dropdown-item");
+
+      let checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+
+      //  IMPORTANT PART
+      const isObject = typeof item === "object";
+
+      const displayText = isObject ? item.value : item; // UI
+      const storedValue = isObject ? JSON.stringify(item) : item; // full object store
+
+      checkbox.value = storedValue;
+
+      // ==============================
+      //  FUNCTIONALITY START
+      // ==============================
+
+      let isDisabled = false;
+
+      if (isObject) {
+        const enableTime = item?.enableTime || "";
+        const disabledProp = item?.disabled;
+
+        // CASE 1: enableTime exists → priority
+        if (enableTime) {
+          try {
+            const now = new Date();
+            let enableDate = new Date();
+
+            // CASE 1: 24-hour format (13:00, 09:15)
+            if (/^\d{1,2}:\d{2}$/.test(enableTime.trim())) {
+              let [hours, minutes] = enableTime.split(":").map(Number);
+              enableDate.setHours(hours, minutes, 0, 0);
+            }
+
+            //  CASE 2: 12-hour format (01:00 PM)
+            else if (/^\d{1,2}:\d{2}\s?(AM|PM)$/i.test(enableTime.trim())) {
+              const [time, modifier] = enableTime.toUpperCase().split(" ");
+              let [hours, minutes] = time.split(":").map(Number);
+
+              if (modifier === "PM" && hours !== 12) hours += 12;
+              if (modifier === "AM" && hours === 12) hours = 0;
+
+              enableDate.setHours(hours, minutes, 0, 0);
+            } else {
+              isDisabled = false;
+              return;
+            }
+
+            isDisabled = now < enableDate;
+            if (isDisabled) {
+              tooltipText = `Enable Time : ${enableTime}`;
+            }
+          } catch (e) {
+            isDisabled = false;
+          }
+        }
+
+        //  CASE 2: fallback to disabled prop
+        else if (typeof disabledProp === "boolean") {
+          isDisabled = disabledProp;
+        }
+
+        //  CASE 3: default
+        else {
+          isDisabled = false;
+        }
+      }
+
+      // apply
+      checkbox.disabled = isDisabled;
+      if (isDisabled) {
+        label.classList.add("disabled");
+        label.title = tooltipText;
+
+        //  Click par bhi show (better UX)
+        label.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          showTooltip(label, tooltipText);
+        });
+      }
+      // ==============================
+      //  FUNCTIONALITY END
+      // ==============================
+
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(` ${displayText}`));
+
+      catItems.appendChild(label);
+    });
+
+    catDiv.appendChild(catHeader);
+    catDiv.appendChild(catItems);
+    dropdownContent.appendChild(catDiv);
+  });
+
+  // =============================
+  // COMMON
+  // =============================
+  function showTooltip(element, text) {
+    // remove old
+    const old = document.querySelector(".dropdown-custom-tooltip");
+    if (old) old.remove();
+
+    const tooltip = document.createElement("div");
+    tooltip.className = "dropdown-custom-tooltip";
+    tooltip.innerText = text;
+
+    document.body.appendChild(tooltip);
+
+    const rect = element.getBoundingClientRect();
+
+    tooltip.style.top = rect.top - 35 + "px";
+    tooltip.style.left = rect.left + "px";
+
+    setTimeout(() => {
+      tooltip.remove();
+    }, 2000);
+  }
+
+  function getAllCheckboxes() {
+    return dropdownContent.querySelectorAll(
+      ".dropdown-item input[type='checkbox']",
+    );
+  }
+
+  function updateCategoryVisibility(mode) {
+    const categoryBlocks = dropdownContent.querySelectorAll(
+      ".dropdown-category-header",
+    );
+
+    categoryBlocks.forEach((header) => {
+      const catDiv = header.parentElement;
+      const itemsDiv = catDiv.querySelector(".dropdown-category-items");
+
+      const checkboxes = itemsDiv.querySelectorAll("input[type='checkbox']");
+
+      let hasSelected = false;
+      let hasPending = false;
+
+      checkboxes.forEach((cb) => {
+        if (cb.checked) hasSelected = true;
+        else hasPending = true;
+      });
+
+      if (mode === "ALL") catDiv.style.display = "block";
+      else if (mode === "SELECTED")
+        catDiv.style.display = hasSelected ? "block" : "none";
+      else if (mode === "PENDING")
+        catDiv.style.display = hasPending ? "block" : "none";
+    });
+  }
+
+  function updateSelection() {
+    const allCheckboxes = getAllCheckboxes();
+
+    // ==================================================
+    // GENERIC DYNAMIC LIMIT SUPPORT (Backward Safe)
+    // ==================================================
+    if (selectionLimit !== null) {
+      let limit =
+        typeof selectionLimit === "function"
+          ? selectionLimit()
+          : selectionLimit;
+
+      limit = Number(limit);
+
+      if (limit > 0) {
+        const checkedBoxes = Array.from(allCheckboxes).filter(
+          (cb) => cb.checked,
+        );
+
+        // If selected > limit → keep first N checked
+        if (checkedBoxes.length > limit) {
+          checkedBoxes.forEach((cb, index) => {
+            cb.checked = index < limit;
+          });
+        }
+      }
+    }
+
+    // ==================================================
+    // OLD LOGIC START (UNCHANGED BEHAVIOR)
+    // ==================================================
+    let selected = [];
+
+    allCheckboxes.forEach((cb) => {
+      if (cb.checked) {
+        try {
+          selected.push(JSON.parse(cb.value)); // object return
+        } catch (e) {
+          selected.push(cb.value); // fallback
+        }
+      }
+    });
+
+    const total = allCheckboxes.length;
+
+    dropdownBtn.innerText = selected.length
+      ? `${selected.length} / ${total} Selected`
+      : title;
+
+    const headers = dropdownContent.querySelectorAll(".dropdown-category-text");
+
+    headers.forEach((header, index) => {
+      const itemsDiv = header.parentElement.parentElement.querySelector(
+        ".dropdown-category-items",
+      );
+
+      const checkboxes = itemsDiv.querySelectorAll("input[type='checkbox']");
+
+      const total = checkboxes.length;
+
+      let selectedCount = 0;
+
+      checkboxes.forEach((cb) => {
+        if (cb.checked) selectedCount++;
+      });
+
+      const catName = categories[index];
+
+      header.innerText = `${catName} (${selectedCount} / ${total})`;
+    });
+
+    callback(selected);
+  }
+
+  function ADD_COPY_LIST_BUTTON(dropdownContent, keyFilterWrapper) {
+    const copyBtn = document.createElement("div");
+    copyBtn.innerHTML = "📋";
+    copyBtn.classList.add("dynamic-dropdown-copy-btn");
+
+    copyBtn.onclick = async function () {
+      const labels = dropdownContent.querySelectorAll(".dropdown-item");
+
+      let arr = [];
+
+      labels.forEach((label) => {
+        if (label.style.display !== "none") {
+          const txt = label.innerText.trim();
+          if (txt) arr.push(txt);
+        }
+      });
+
+      if (!arr.length) {
+        await navigator.clipboard.writeText("");
+        showTooltip(copyBtn, "No Recrod");
+        return;
+      }
+
+      await navigator.clipboard.writeText(arr.join("\n"));
+
+      showTooltip(
+        copyBtn,
+        `${arr.length} ${arr.length === 1 ? "Record" : "Records"} Copied`,
+      );
+    };
+
+    keyFilterWrapper.style.position = "relative";
+    keyFilterWrapper.appendChild(copyBtn);
+  }
+
+  dropdownContent.addEventListener("change", (e) => {
+    const isKeyFilter = e.target.closest(".dropdown-keyfilters");
+    const isItem = e.target.closest(".dropdown-item");
+
+    // OLD LOGIC SAFE
+    if (isKeyFilter) return; // ignore key filter clicks
+    if (!isItem) return; // only actual dropdown items
+
+    const changedCheckbox = e.target;
+
+    // ==================================================
+    // NEW GENERIC LIMIT FEATURE (Backward Compatible)
+    // ==================================================
+    if (
+      changedCheckbox.type === "checkbox" &&
+      changedCheckbox.checked &&
+      typeof selectionLimit !== "undefined" &&
+      selectionLimit !== null
+    ) {
+      let limit =
+        typeof selectionLimit === "function"
+          ? selectionLimit()
+          : selectionLimit;
+
+      limit = Number(limit);
+
+      if (limit > 0) {
+        const checkedCount = dropdownContent.querySelectorAll(
+          ".dropdown-item input[type='checkbox']:checked",
+        ).length;
+
+        if (checkedCount > limit) {
+          changedCheckbox.checked = false;
+
+          SHOW_ERROR_POPUP(`Maximum ${limit} selections allowed.`);
+          return;
+        }
+      }
+    }
+
+    // OLD MAIN LOGIC
+    updateSelection();
+  });
+
+  // SELECT ALL
+  if (selectAllCheckbox) {
+    selectAllCheckbox.onclick = function () {
+      getAllCheckboxes().forEach((cb) => {
+        if (!cb.disabled) {
+          cb.checked = this.checked;
+        }
+      });
+
+      updateSelection();
+      updateCategoryVisibility("ALL");
+    };
+  }
+
+  // FILTERS
+  if (btnAll) {
+    btnAll.onclick = () => {
+      // Reuse existing search + key filter logic
+      searchBox.dispatchEvent(new Event("keyup"));
+
+      setActiveFilter(btnAll);
+    };
+  }
+
+  if (btnSelected) {
+    btnSelected.onclick = () => {
+      // First apply search/filter logic
+      searchBox.dispatchEvent(new Event("keyup"));
+
+      dropdownContent.querySelectorAll(".dropdown-item").forEach((l) => {
+        if (l.style.display !== "none") {
+          const cb = l.querySelector("input");
+          l.style.display = cb.checked ? "flex" : "none";
+        }
+      });
+
+      updateCategoryVisibility("SELECTED");
+      setActiveFilter(btnSelected);
+    };
+  }
+
+  if (btnPending) {
+    btnPending.onclick = () => {
+      // First apply search/filter logic
+      searchBox.dispatchEvent(new Event("keyup"));
+
+      dropdownContent.querySelectorAll(".dropdown-item").forEach((l) => {
+        if (l.style.display !== "none") {
+          const cb = l.querySelector("input");
+          l.style.display = !cb.checked ? "flex" : "none";
+        }
+      });
+
+      updateCategoryVisibility("PENDING");
+      setActiveFilter(btnPending);
+    };
+  }
+
+  // SEARCH
+  searchBox.onkeyup = function () {
+    const val = this.value.toLowerCase().trim();
+
+    const categoryBlocks = dropdownContent.querySelectorAll(
+      ".dropdown-category-header",
+    );
+
+    categoryBlocks.forEach((header) => {
+      const catDiv = header.parentElement;
+      const itemsDiv = catDiv.querySelector(".dropdown-category-items");
+
+      const labels = itemsDiv.querySelectorAll(".dropdown-item");
+
+      let visibleCount = 0;
+      let selectedCount = 0;
+
+      labels.forEach((label) => {
+        const cb = label.querySelector("input");
+
+        let text = label.innerText.toLowerCase();
+
+        // 🔥 include object fields (OLD logic same)
+        let obj;
+        try {
+          obj = JSON.parse(cb.value);
+          if (typeof obj === "object") {
+            text += " " + Object.values(obj).join(" ").toLowerCase();
+          }
+        } catch (e) {}
+
+        const searchMatch = text.includes(val);
+
+        // 🔥 KEY FILTER MATCH
+        let filterMatch = true;
+        const hasKeyFilters = Object.keys(keyFilters || {}).length > 0;
+
+        let anyFilterSelected = false; // ✅ NEW
+
+        if (hasKeyFilters) {
+          for (let key in activeKeyFilters) {
+            const set = activeKeyFilters[key];
+
+            if (set.size) {
+              anyFilterSelected = true; // ✅ NEW
+            }
+
+            if (set.size && (!obj || !set.has(obj[key]))) {
+              filterMatch = false;
+              break;
+            }
+          }
+        }
+
+        if (showDataBasedOnFilters && !anyFilterSelected) {
+          filterMatch = false;
+        }
+
+        const finalMatch = searchMatch && filterMatch;
+
+        label.style.display = finalMatch ? "flex" : "none";
+
+        if (finalMatch) {
+          visibleCount++;
+          if (cb.checked) selectedCount++;
+        }
+      });
+
+      // 🔥 hide empty category
+      catDiv.style.display = visibleCount > 0 ? "block" : "none";
+
+      // 🔥 update count
+      const catName = header
+        .querySelector(".dropdown-category-text")
+        .innerText.split("(")[0]
+        .trim();
+
+      header.querySelector(".dropdown-category-text").innerText =
+        `${catName} (${selectedCount} / ${visibleCount})`;
+    });
+  };
+
+  clearBtn.onclick = () => {
+    searchBox.value = "";
+
+    // Reapply current filter/search rules
+    searchBox.dispatchEvent(new Event("keyup"));
+
+    // keep active top button mode if selected
+    if (btnSelected && btnSelected.classList.contains("active-filter")) {
+      btnSelected.click();
+    } else if (btnPending && btnPending.classList.contains("active-filter")) {
+      btnPending.click();
+    } else if (btnAll && btnAll.classList.contains("active-filter")) {
+      btnAll.click();
+    }
+  };
+
+  dropdown.appendChild(dropdownBtn);
+  dropdown.appendChild(dropdownContent);
+
+  if (categoryWiseCheckbox) {
+    categoryWiseCheckbox.onchange = function () {
+      const allHeaders = dropdownContent.querySelectorAll(
+        ".dropdown-category-header",
+      );
+
+      const allCategoryBoxes = dropdownContent.querySelectorAll(
+        ".dropdown-category-items",
+      );
+
+      if (this.checked) {
+        allHeaders.forEach((h) => (h.style.display = "flex"));
+
+        allCategoryBoxes.forEach((box) => {
+          box.style.display = "block";
+          box.style.paddingLeft = "";
+        });
+      } else {
+        allHeaders.forEach((h) => (h.style.display = "none"));
+
+        allCategoryBoxes.forEach((box) => {
+          box.style.display = "block";
+          box.style.paddingLeft = "0px";
+        });
+      }
+    };
+
+    // 🔥 apply initial state
+    categoryWiseCheckbox.dispatchEvent(new Event("change"));
+  }
+
+  dropdown.forceUpdateSelection = updateSelection;
+  container.appendChild(dropdown);
+  if (showDataBasedOnFilters) {
+    searchBox.dispatchEvent(new Event("keyup"));
+  }
+}
+
+function UPDATE_MULTI_SELECT_DROPDOWN_WITH_CATEGORY_WITH_KEYFILTER(
+  containerId,
+  data,
+  callback,
+  controls = {},
+  keyFilters = {},
+) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  CREATE_MULTI_SELECT_DROPDOWN_WITH_CATEGORY_WITH_KEYFILTER({
+    containerId,
+    title: "Select",
+    data,
+    callback,
+    controls,
+    keyFilters,
+  });
+}
+
+function GET_KEY_FILTERS(data, keys) {
+  const result = {};
+  const tempSets = {};
+
+  // Initialize sets
+  keys.forEach((key) => {
+    tempSets[key] = new Set();
+  });
+
+  // Single loop over data
+  Object.values(data).forEach((student) => {
+    keys.forEach((key) => {
+      const value = (student[key] || "").toString().trim();
+
+      if (value !== "") {
+        tempSets[key].add(value);
+      }
+    });
+  });
+
+  // Convert to array
+  keys.forEach((key) => {
+    result[key] = Array.from(tempSets[key]);
+  });
+
+  return result;
+}
+
+function SET_DIV_TITLE(popupId, titleText) {
+  const el = document.querySelector(`#${popupId} .popup-title-box`);
+  if (el) {
+    el.innerText = titleText;
+  } else {
+    console.warn("popup-title-box not found inside:", popupId);
+  }
+}
+
+function SET_USER_NAME_ON_SCREEN(devName) {
+  const userBlocks = document.querySelectorAll(".user-info-block");
+
+  userBlocks.forEach((block) => {
+    if (devName) {
+      block.style.display = "block";
+
+      block.innerHTML = `<p><strong>${devName}</strong></p>`;
+    } else {
+      block.style.display = "none";
+
+      block.innerHTML = "";
+    }
+  });
+}
+
+function PARSE_IST_DATE(dateString) {
+  if (!dateString) return null;
+
+  dateString = dateString.toString().trim();
+
+  const monthNames = {
+    jan: 0,
+    january: 0,
+    feb: 1,
+    february: 1,
+    mar: 2,
+    march: 2,
+    apr: 3,
+    april: 3,
+    may: 4,
+    jun: 5,
+    june: 5,
+    jul: 6,
+    july: 6,
+    aug: 7,
+    august: 7,
+    sep: 8,
+    sept: 8,
+    september: 8,
+    oct: 9,
+    october: 9,
+    nov: 10,
+    november: 10,
+    dec: 11,
+    december: 11,
+  };
+
+  let parts;
+
+  // =============================
+  // 0. dd-MMM-yyyy HH:mm / dd-MMMM-yyyy HH:mm
+  // =============================
+  parts = dateString.match(
+    /^(\d{1,2})-([A-Za-z]+)-(\d{4})\s+(\d{1,2}):(\d{2})$/,
+  );
+
+  if (parts) {
+    const day = parseInt(parts[1], 10);
+    const month = monthNames[parts[2].toLowerCase()];
+    const year = parseInt(parts[3], 10);
+    const hour = parseInt(parts[4], 10);
+    const minute = parseInt(parts[5], 10);
+
+    if (month === undefined) return null;
+
+    return new Date(year, month, day, hour, minute, 0);
+  }
+
+  // =============================
+  // 1. dd-MMM-yyyy / dd-MMMM-yyyy
+  // =============================
+  parts = dateString.match(/^(\d{1,2})-([A-Za-z]+)-(\d{4})/);
+  if (parts) {
+    const day = parseInt(parts[1], 10);
+    const month = monthNames[parts[2].toLowerCase()];
+    const year = parseInt(parts[3], 10);
+
+    if (month === undefined) return null;
+    return new Date(year, month, day);
+  }
+
+  // =============================
+  // 2. dd MMM yyyy
+  // =============================
+  parts = dateString.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
+  if (parts) {
+    const day = parseInt(parts[1], 10);
+    const month = monthNames[parts[2].toLowerCase()];
+    const year = parseInt(parts[3], 10);
+
+    if (month === undefined) return null;
+    return new Date(year, month, day);
+  }
+
+  // =============================
+  // 3. dd-MM-yyyy
+  // =============================
+  parts = dateString.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
+  if (parts) {
+    const day = parseInt(parts[1], 10);
+    const month = parseInt(parts[2], 10) - 1;
+    const year = parseInt(parts[3], 10);
+
+    return new Date(year, month, day);
+  }
+
+  // =============================
+  // 3. dd/MM/yyyy HH:MM
+  // =============================
+  parts = dateString.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})$/,
+  );
+
+  if (parts) {
+    const day = parseInt(parts[1], 10);
+    const month = parseInt(parts[2], 10) - 1;
+    const year = parseInt(parts[3], 10);
+    const hour = parseInt(parts[4], 10);
+    const minute = parseInt(parts[5], 10);
+
+    return new Date(year, month, day, hour, minute, 0);
+  }
+
+  // =============================
+  // 4. M/D/YYYY
+  // =============================
+  parts = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (parts) {
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const year = parseInt(parts[3], 10);
+
+    return new Date(year, month, day);
+  }
+
+  // =============================
+  // 5. YYYY/MM/DD
+  // =============================
+  parts = dateString.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  if (parts) {
+    const year = parseInt(parts[1], 10);
+    const month = parseInt(parts[2], 10) - 1;
+    const day = parseInt(parts[3], 10);
+
+    return new Date(year, month, day);
+  }
+
+  // =============================
+  // 6. ISO (safe only)
+  // =============================
+  if (dateString.includes("T")) {
+    const d = new Date(dateString);
+    if (!isNaN(d)) {
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+  }
+
+  return null; //  unsupported format
+}
+
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const toRad = (x) => (x * Math.PI) / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function checkLocation(inputLat, inputLong, allowedRadius) {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject("Geolocation not supported");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const distance = getDistance(latitude, longitude, inputLat, inputLong);
+        //SHOW_INFO_POPUP(`Current location: ${latitude}, ${longitude}, Distance: ${distance}`);
+        console.log(
+          `Current location: ${latitude}, ${longitude}, Distance: ${distance}`,
+        );
+
+        let formattedDistance;
+
+        if (distance >= 1000)
+          formattedDistance = (Number(distance) / 1000).toFixed(2) + " km";
+        else formattedDistance = Number(distance).toFixed(2) + " m";
+
+        formattedDistance += `%(${Number(latitude).toFixed(5)},${Number(longitude).toFixed(5)})`;
+
+        resolve(distance <= allowedRadius ? 1 : formattedDistance);
+      },
+      (error) => {
+        console.error("Geolocation error:", error.message);
+        reject(error);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      },
+    );
+  });
+}
+
+function convertToMinutes(time) {
+  const [hours, minutes] = time.split(":").map(Number);
+
+  return hours * 60 + minutes;
+}
+
+function CONVERT_ROWS_TO_OBJECTS(data) {
+  const keys = data[0].map((header) =>
+    header
+      .replace(/[^\w\s]/g, "")
+      .toLowerCase()
+      .replace(/\s+(.)/g, (_, char) => char.toUpperCase()),
+  );
+
+  return data
+    .slice(1)
+    .map((row) =>
+      Object.fromEntries(row.map((value, index) => [keys[index], value])),
+    );
+}
+
+/**
+ * Creates a key-value map from a 2D array (header row is skipped).
+ * @param {Array} data - Sheet data.
+ * @param {number} keyIndex - Column index to use as the key.
+ * @param {number|number[]} valueIndexes - Single column index or array of indexes for the value(s).
+ * @param {Function} [filterFn] - Optional filter. Return true to include the row.
+ * @param {Function} [SortFn] - Optional Sort fun used to sort data.
+ * Examples:
+ * CREATE_MAP(data, 6, 7);
+ * CREATE_MAP(data, 6, [7, 8]);
+ * CREATE_MAP(data, 6, 7, row => row[5] === "Y");
+ */
+function CREATE_MAP(data, keyIndex, valueIndexes, filterFn, sortFn) {
+  const map = {};
+  const isArray = Array.isArray(valueIndexes);
+
+  // Header skip
+  let rows = data.slice(1);
+
+  // Optional filter
+  if (filterFn) {
+    rows = rows.filter(filterFn);
+  }
+
+  // Optional sort
+  if (sortFn) {
+    rows.sort(sortFn);
+  }
+
+  for (const row of rows) {
+    map[row[keyIndex]] = isArray
+      ? valueIndexes.map((index) => row[index])
+      : row[valueIndexes];
+  }
+
+  return map;
+}
+
+/**
+ * Dynamically generates an HTML table from Google Sheets array data.
+ * The first row of `data` is treated as table headers.
+ * Supports multiple configurable action buttons such as Edit, Delete, View, etc.
+ *
+ * @param {Array<Array>} data Google Sheets data where data[0] contains headers.
+ * @param {string} headerId DOM element ID for the table header.
+ * @param {string} bodyId DOM element ID for the table body.
+ * @param {Array<Object>} actions Optional action buttons with callback and payload.
+ * @param {Object} options Optional search and sorting configuration.
+
+const data = [
+  ["Status", "Name", "Month", "Year", "Amount", "Comment", "File URL"],
+  [
+    "Approved",
+    "Sachinandan Tiwari",
+    "May",
+    "2026",
+    "500",
+    "Fee Paid",
+    "Samrat_Tiwari_May_2026_100826",
+  ],
+  [
+    "Pending",
+    "Rahul Tiwari",
+    "June",
+    "2026",
+    "750",
+    "Payment Pending",
+    "Rahul_Tiwari_June_2026",
+  ],
+]
+const actions = [
+   {
+    name: "Edit",
+    text: "",
+    title: "Edit record",
+    image: "Assests/DeleteIcon.png",
+    className: "btn-edit",
+    onClick: function (context) {
+      console.log("Edit clicked");
+      console.log("Selected row:", context.row);
+    },
+    hide: function (row) {
+      return row[0] === "Pending";
+    },
+    disable: function (row) {
+      return row[1] === "Amit Sharma";
+    },
+  },
+
+];
+
+ * The first row of data is treated as table headers.
+ * If options.columnMap is provided, only selected columns are displayed
+ * in the same sequence as defined in columnMap.
+ *
+ * Example:
+ * columnMap: {
+ *   Status: 0,
+ *   "Login Mobile No": 4,
+ *   "Father Name": 5,
+ *   Amount: 9,
+ *   Month: 7
+ * }
+ *
+ * If columnMap is not provided, all columns are displayed by default.
+ 
+ {
+    enableSearch: true,
+    enableSorting: true,
+    searchPlaceholder: "Search past records..."
+      isFileURLThere: true,
+    isFileNameThere: true,
+    enableRowCount : true,
+    columnMap: {
+    Status: 0,
+    "Login Mobile No": 4,
+    "Father Name": 5,
+    Amount: 9,
+    Month: 7
+  }
+  }
+
+ */
+
+function fillDynamicTableRows(
+  data,
+  headerId,
+  bodyId,
+  actions = [],
+  options = {},
+) {
+  const tableHead = document.getElementById(headerId);
+  const tableBody = document.getElementById(bodyId);
+
+  if (!tableHead || !tableBody) return;
+
+  const table = tableHead.closest("table");
+
+  // Clear existing content
+  tableHead.innerHTML = "";
+  tableBody.innerHTML = "";
+
+  // Remove previous search box
+  const oldSearch = table.parentElement.querySelector(
+    ".collection-table-SearchContainer",
+  );
+
+  if (oldSearch) {
+    oldSearch.remove();
+  }
+
+  // Remove previous row count
+  const oldRowCount = table.parentElement.querySelector(
+    ".collection-table-RowCount",
+  );
+
+  if (oldRowCount) {
+    oldRowCount.remove();
+  }
+
+  // No data
+  if (!data || data.length === 0) {
+    return;
+  }
+
+  const headers = data[0];
+  const originalRows = data.slice(1);
+
+  /*
+   * Column Map
+   *
+   * If columnMap is provided:
+   *   - Object keys   = Display column names
+   *   - Object values = Original data column indexes
+   *
+   * Example:
+   * {
+   *   Date: 2,
+   *   Status: 0,
+   *   Comment: 1
+   * }
+   *
+   * If columnMap is not provided:
+   *   - Existing/default behavior will be used.
+   */
+  const hasColumnMap =
+    options.columnMap &&
+    typeof options.columnMap === "object" &&
+    !Array.isArray(options.columnMap) &&
+    Object.keys(options.columnMap).length > 0;
+
+  const displayHeaders = hasColumnMap
+    ? Object.keys(options.columnMap)
+    : headers;
+
+  const displayColumnIndexes = hasColumnMap
+    ? Object.values(options.columnMap)
+    : headers.map(function (_, index) {
+        return index;
+      });
+
+  let filteredRows = [...originalRows];
+
+  let sortColumn = -1;
+  let sortDirection = "asc";
+
+  // Search box
+  if (options.enableSearch) {
+    const searchContainer = document.createElement("div");
+
+    searchContainer.className = "collection-table-SearchContainer";
+
+    const searchInput = document.createElement("input");
+
+    searchInput.type = "text";
+    searchInput.className = "collection-table-SearchInput";
+
+    searchInput.placeholder = options.searchPlaceholder || "Search...";
+
+    const clearButton = document.createElement("button");
+
+    clearButton.type = "button";
+    clearButton.className = "collection-table-SearchClearBtn";
+
+    clearButton.innerHTML = "&times;";
+    clearButton.title = "Clear search";
+    clearButton.style.display = "none";
+
+    searchContainer.appendChild(searchInput);
+    searchContainer.appendChild(clearButton);
+
+    table.parentElement.insertBefore(searchContainer, table);
+
+    // Live search
+    searchInput.addEventListener("input", function () {
+      const searchValue = this.value.toLowerCase().trim();
+
+      clearButton.style.display = this.value.trim() ? "block" : "none";
+
+      filteredRows = originalRows.filter(function (row) {
+        return row.some(function (cell) {
+          return String(cell).toLowerCase().includes(searchValue);
+        });
+      });
+
+      renderRows();
+    });
+
+    // Clear search
+    clearButton.addEventListener("click", function () {
+      searchInput.value = "";
+      clearButton.style.display = "none";
+
+      filteredRows = [...originalRows];
+
+      renderRows();
+
+      searchInput.focus();
+    });
+  }
+
+  // Row count
+  let rowCountContainer = null;
+
+  if (options.enableRowCount) {
+    rowCountContainer = document.createElement("div");
+
+    rowCountContainer.className = "collection-table-RowCount";
+
+    table.parentElement.insertBefore(rowCountContainer, table);
+  }
+
+  // Update row count
+  function updateRowCount() {
+    if (!rowCountContainer) return;
+
+    const total = originalRows.length;
+    const current = filteredRows.length;
+
+    if (current === total) {
+      rowCountContainer.textContent = "Total Records: " + total;
+    } else {
+      rowCountContainer.textContent =
+        "Showing " + current + " of " + total + " records";
+    }
+  }
+
+  // Create header
+  const headerRow = document.createElement("tr");
+
+  if (actions.length > 0) {
+    const actionTh = document.createElement("th");
+
+    actionTh.textContent = "Action";
+    actionTh.className = "table-action-header";
+
+    headerRow.appendChild(actionTh);
+  }
+
+  displayHeaders.forEach(function (header, displayIndex) {
+    const columnIndex = displayColumnIndexes[displayIndex];
+
+    // Hide File URL column
+    if (options.isFileURLThere && String(header).toLowerCase() === "file url") {
+      return;
+    }
+
+    const th = document.createElement("th");
+
+    th.textContent = header;
+
+    // Sorting
+    if (options.enableSorting) {
+      th.classList.add("sortable-table-header");
+
+      th.title = "Click to sort";
+
+      th.addEventListener("click", function () {
+        if (sortColumn === columnIndex) {
+          sortDirection = sortDirection === "asc" ? "desc" : "asc";
+        } else {
+          sortColumn = columnIndex;
+          sortDirection = "asc";
+        }
+
+        filteredRows.sort(function (a, b) {
+          const valueA = String(a[columnIndex] ?? "").toLowerCase();
+
+          const valueB = String(b[columnIndex] ?? "").toLowerCase();
+
+          if (valueA < valueB) {
+            return sortDirection === "asc" ? -1 : 1;
+          }
+
+          if (valueA > valueB) {
+            return sortDirection === "asc" ? 1 : -1;
+          }
+
+          return 0;
+        });
+
+        updateSortIndicators();
+        renderRows();
+      });
+    }
+
+    headerRow.appendChild(th);
+  });
+
+  tableHead.appendChild(headerRow);
+
+  // Update sort indicators
+  function updateSortIndicators() {
+    const headerCells = tableHead.querySelectorAll("th");
+
+    const offset = actions.length > 0 ? 1 : 0;
+
+    displayHeaders.forEach(function (_, displayIndex) {
+      const columnIndex = displayColumnIndexes[displayIndex];
+
+      const th = headerCells[displayIndex + offset];
+
+      if (!th) return;
+
+      th.classList.remove("sort-asc", "sort-desc");
+
+      if (columnIndex === sortColumn) {
+        th.classList.add(sortDirection === "asc" ? "sort-asc" : "sort-desc");
+      }
+    });
+  }
+
+  // Evaluate action property
+  function evaluateActionProperty(property, row, defaultValue) {
+    if (property === undefined) {
+      return defaultValue;
+    }
+
+    if (typeof property === "function") {
+      return property(row);
+    }
+
+    return property;
+  }
+
+  // Render rows
+  function renderRows() {
+    tableBody.innerHTML = "";
+
+    updateRowCount();
+
+    // No matching data
+    if (filteredRows.length === 0) {
+      const tr = document.createElement("tr");
+
+      tr.className = "no-data-row";
+
+      const td = document.createElement("td");
+
+      td.colSpan = displayHeaders.length + (actions.length > 0 ? 1 : 0);
+
+      td.textContent = "No records found.";
+
+      tr.appendChild(td);
+      tableBody.appendChild(tr);
+
+      return;
+    }
+
+    filteredRows.forEach(function (row) {
+      const tr = document.createElement("tr");
+
+      // Action buttons
+      if (actions.length > 0) {
+        const actionTd = document.createElement("td");
+
+        actionTd.className = "table-action-cell";
+
+        actions.forEach(function (action) {
+          // Check whether button should be hidden
+          const shouldHide = evaluateActionProperty(action.hide, row, false);
+
+          if (shouldHide) {
+            return;
+          }
+
+          const button = document.createElement("button");
+
+          button.type = "button";
+
+          button.className = "table-action-btn " + (action.className || "");
+
+          // Check whether button should be disabled
+          const shouldDisable = evaluateActionProperty(
+            action.disable,
+            row,
+            false,
+          );
+
+          button.disabled = !!shouldDisable;
+
+          // Image
+          if (action.image) {
+            const img = document.createElement("img");
+
+            img.src = action.image;
+
+            img.alt = action.name || "Action";
+
+            img.title = action.title || "";
+
+            button.appendChild(img);
+          }
+
+          // Text
+          if (action.text) {
+            const span = document.createElement("span");
+
+            span.textContent = action.text;
+
+            button.appendChild(span);
+          }
+
+          // Tooltip
+          if (action.title) {
+            button.title = action.title;
+          }
+
+          // Inline style
+          if (action.style) {
+            Object.assign(button.style, action.style);
+          }
+
+          // Callback
+          button.addEventListener("click", function () {
+            if (typeof action.onClick === "function") {
+              action.onClick({
+                row: row,
+                headers: headers,
+                data: data,
+                action: action,
+              });
+            }
+          });
+
+          actionTd.appendChild(button);
+        });
+
+        tr.appendChild(actionTd);
+      }
+
+      // Data columns
+      displayHeaders.forEach(function (header, displayIndex) {
+        const columnIndex = displayColumnIndexes[displayIndex];
+
+        const td = document.createElement("td");
+
+        const value = row[columnIndex] ?? "";
+
+        // File URL column
+        if (
+          options.isFileURLThere &&
+          String(header).toLowerCase() === "file url"
+        ) {
+          td.style.display = "none";
+        }
+
+        // File Name column
+        else if (
+          options.isFileURLThere &&
+          options.isFileNameThere &&
+          String(header).toLowerCase() === "file name"
+        ) {
+          const fileUrlIndex = headers.findIndex(function (h) {
+            return String(h).toLowerCase() === "file url";
+          });
+
+          const fileUrl = fileUrlIndex >= 0 ? row[fileUrlIndex] : "";
+
+          if (fileUrl) {
+            const link = document.createElement("a");
+
+            link.href = fileUrl;
+            link.target = "_blank";
+
+            link.textContent = value || "File";
+
+            link.title = "Open file";
+
+            td.appendChild(link);
+          } else {
+            td.textContent = value;
+          }
+        }
+
+        // Normal column
+        else {
+          td.textContent = value;
+        }
+
+        tr.appendChild(td);
+      });
+
+      tableBody.appendChild(tr);
+    });
+  }
+
+  // Initial render
+  renderRows();
+}
+
+function formatDuration(startTimestamp, endTimestamp) {
+  // Calculate the difference in milliseconds
+  const durationMs = endTimestamp - startTimestamp;
+
+  // Convert milliseconds to hours and minutes
+  const totalMinutes = Math.floor(durationMs / (1000 * 60));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  // Format the duration
+  return `${hours} Hr ${minutes} Min`;
+}
+
+async function checkPassword(password) {
+  const pass = password.toString().toLowerCase().trim();
+  return new Promise((resolve, reject) => {
+    fetch(CHECK_PASSWORD_API + pass)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            `Network response was not ok. Status: ${response.status} - ${response.statusText}`,
+          );
+        }
+        return response.json();
+      })
+      .then((data) => {
+        resolve(data); // Resolve the promise with the data
+      })
+      .catch((error) => {
+        reject(error); // Reject the promise with the error
+      });
+  });
+}
+
+function convertDateToFormat(inputDate) {
+  const date = new Date(inputDate);
+
+  const options = {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "short", // Short month name (e.g., Jan, Feb)
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true, // 12-hour format with AM/PM
+  };
+
+  return new Intl.DateTimeFormat("en-IN", options).format(date);
+}
+
+function convertDate(dateString) {
   // Parse the input date string using moment.js
   const date = moment(dateString, "DD-MM-YYYY HH:mm:ss");
 
   // Get the formatted date and time
-  const formattedDate = date.format(format);
+  const formattedDate = date.format("DD MMM YYYY HH:mm A");
 
   return formattedDate;
+}
+
+function getFormattedDateForDownload() {
+  const today = new Date();
+  const day = today.getDate();
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const month = monthNames[today.getMonth()];
+  return `${day}${daySuffix(day)}${month}`;
 }
