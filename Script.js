@@ -1,6 +1,24 @@
 const pcSubmitBtn = "pcSubmitBtn";
 const mainPasswordTxtBox = "mainPasswordTxtBox";
-function pcSubmitBtnClick() {
+
+document.addEventListener("DOMContentLoaded", async function () {
+  const cacheResponse = await DB_GET(
+    "GET_DEVOTEE_INFO",
+    INDEX_DB.dbName,
+    INDEX_DB.storeName,
+  );
+
+  if (cacheResponse) {
+    populateDevoteeData(cacheResponse);
+    // selectedUser = cacheResponse?.data;
+    // selectedDevoteeName = cacheResponse?.data?.name;
+    // renderMenus(cacheResponse?.data?.role);
+  } else {
+    SHOW_SPECIFIC_DIV("passwordPopup");
+  }
+});
+
+async function pcSubmitBtnClick() {
   const passwordVal = GetControlValue(mainPasswordTxtBox)
     .toString()
     .toLowerCase()
@@ -10,43 +28,35 @@ function pcSubmitBtnClick() {
     SHOW_ERROR_POPUP("Please Enter Password");
     return;
   }
-  IsLoading(true);
+
   const request = {
-    apiType: "GET_DEVOTEE_INFO",
+    apiType: "",
     password: passwordVal,
   };
-  fetch(GET_DEVOTEE_INFO, {
-    method: "POST",
-    body: JSON.stringify(request),
-  })
-    .then((apiResponse) => apiResponse.json())
-    .then((response) => {
-      IsLoading(false);
-      if (response.status) {
-        if (
-          response?.data?.role == ROLE_CONSTANT.admin ||
-          response?.data?.role == ROLE_CONSTANT.superAdmin
-        ) {
-          ShowPopup("adminRoleButton");
-        }
-        const devName = response?.data?.devName?.toString().trim();
-        document.getElementById("userNameLbl").innerHTML = `<b>${devName}</b>`; // set user name
-        localStorage.setItem(bheeshmUserNameLSKey, devName);
-        localStorage.setItem(
-          bheeshmUserFacilitatorLSKey,
-          response?.data?.facilitator?.toString()
-        );
-        ShowPopup(CM_CONTANER);
-        HidePopup(PASSWORD_CONTAINER);
-        initializeCollctionMasterPage(devName);
-      } else if (!response.status) {
-        SHOW_ERROR_POPUP("Wrong Password");
-        return;
-      }
-    })
-    .catch((ex) => {
-      IsLoading(false);
-    });
+
+  const response = await CALL_API_WITH_CACHE("GET_DEVOTEE_INFO", request);
+  populateDevoteeData(response);
+}
+
+function populateDevoteeData(response) {
+  if (response.status) {
+    if (
+      response?.data?.role == ROLE_CONSTANT.admin ||
+      response?.data?.role == ROLE_CONSTANT.superAdmin
+    ) {
+      ShowPopup("adminRoleButton");
+    }
+    const devName = response?.data?.devName?.toString().trim();
+    document.getElementById("userNameLbl").innerHTML = `<b>${devName}</b>`; // set user name
+    localStorage.setItem(bheeshmUserNameLSKey, devName);
+    localStorage.setItem(
+      bheeshmUserFacilitatorLSKey,
+      response?.data?.facilitator?.toString(),
+    );
+    ShowPopup(CM_CONTANER);
+    HidePopup(PASSWORD_CONTAINER);
+    initializeCollctionMasterPage(devName);
+  }
 }
 
 function clearLocalStorageOnInitialLoad() {

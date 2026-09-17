@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
     "cmrNameULList",
     function (selectedText) {
       selectedRecurringDonorName = selectedText;
-    }
+    },
   );
 });
 
@@ -107,7 +107,7 @@ async function initializeCollctionMasterPage(devName) {
     apiType: "GET_DONOR_NAME_LIST",
     devName: devName,
   };
-  fetch(GET_DONOR_NAME_LIST, {
+  fetch(APPLICATION_URL, {
     method: "POST",
     body: JSON.stringify(request),
   })
@@ -120,18 +120,18 @@ async function initializeCollctionMasterPage(devName) {
         initializedLiveSearchControl(
           "cmrNameLiveSearch",
           "cmrNameULList",
-          masterList
+          masterList,
         );
 
         masterList.unshift(devName);
         initializedLiveSearchControl(
           cmNameLiveSearch,
           cmNameULList,
-          masterList
+          masterList,
         );
       } else {
         SHOW_ERROR_POPUP(
-          "Something went wrong , Please contact to any NKD Servants"
+          "Something went wrong , Please contact to any NKD Servants",
         );
       }
     })
@@ -222,7 +222,7 @@ function cmSubmitBtnClick() {
   saveRequest.timestamp = DATE_UTC;
 
   IsLoading(true);
-  fetch(SAVE_COLLECTION_MASTER_DATA, {
+  fetch(APPLICATION_URL, {
     method: "POST",
     body: JSON.stringify(saveRequest),
   })
@@ -263,7 +263,7 @@ async function cmPedningDonorBtnClick() {
 
   IsLoading(true);
   try {
-    const apiResponse = await fetch(GET_PENDING_DONOR_LIST, {
+    const apiResponse = await fetch(APPLICATION_URL, {
       method: "POST",
       body: JSON.stringify(request),
     });
@@ -317,7 +317,7 @@ function cmPendingDonorDownloadClick(tableId) {
 
   exportTableToExcel(
     tableId,
-    `PendingList_${devNamePart}_${dateForExcel}.xlsx`
+    `PendingList_${devNamePart}_${dateForExcel}.xlsx`,
   );
 }
 
@@ -330,7 +330,7 @@ function collectionListExcelBtnClick(tableId) {
 
   exportTableToExcel(
     tableId,
-    `CollectionList_${devNamePart}_${dateForExcel}.xlsx`
+    `CollectionList_${devNamePart}_${dateForExcel}.xlsx`,
   );
 }
 
@@ -342,7 +342,7 @@ function cmCollectionListContainerClick() {
 function openCMRContainer() {
   SHOW_CONFIRMATION_POPUP(
     "Do you want to open recurring collection form",
-    openCMRContainerDiv
+    openCMRContainerDiv,
   );
 }
 

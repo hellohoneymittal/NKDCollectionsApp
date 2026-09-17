@@ -85,7 +85,7 @@ function dmSubmitBtnClick() {
   console.log("Donor Data:", donorMasterRequest);
 
   IsLoading(true);
-  fetch(SAVE_DONOR_MASTER_DATA, {
+  fetch(APPLICATION_URL, {
     method: "POST",
     body: JSON.stringify(donorMasterRequest),
   })
@@ -99,7 +99,7 @@ function dmSubmitBtnClick() {
         initializeCollctionMasterPage(devoteeNameDM);
       } else if (!response.status && response.data == "dublicate") {
         SHOW_ERROR_POPUP(
-          "Please give correct information , donor name already exists."
+          "Please give correct information , donor name already exists.",
         );
         return;
       } else {
@@ -118,11 +118,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document
   .querySelectorAll(
-    "#donorMasterContainer input, #donorMasterContainer textarea, #donorMasterContainer select"
+    "#donorMasterContainer input, #donorMasterContainer textarea, #donorMasterContainer select",
   )
   .forEach((element) => {
     element.addEventListener("input", () =>
-      disabledButtonState(DM_CONTAINER, dmSubmitBtn)
+      disabledButtonState(DM_CONTAINER, dmSubmitBtn),
     );
   });
 
