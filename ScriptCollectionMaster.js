@@ -207,6 +207,10 @@ function cmSubmitBtnClick() {
     .trim();
   const amount = GetControlValue(cmAmountTxtBox);
   const paymentMethod = GetControlValue(cmPaymentDdl);
+  const transactionFor =
+    paymentMethod === "Cash"
+      ? document.getElementById("cmTransactionForDdl")?.value || ""
+      : "";
   const notes = GetControlValue(cmNotesTxtBox);
   const devoteeNameCM = localStorage.getItem(bheeshmUserNameLSKey);
   const devoteeFacNameCM = localStorage.getItem(bheeshmUserFacilitatorLSKey);
@@ -221,6 +225,10 @@ function cmSubmitBtnClick() {
   }
   if (!paymentMethod) {
     SHOW_ERROR_POPUP("Choose Payment Options");
+    return;
+  }
+  if (paymentMethod === "Cash" && !transactionFor) {
+    SHOW_ERROR_POPUP("Please select Transaction For when payment is Cash");
     return;
   }
   if (
@@ -246,6 +254,7 @@ function cmSubmitBtnClick() {
   saveRequest.screenshot = "";
   saveRequest.receiptsNo = "";
   saveRequest.notes = notes;
+  saveRequest.transactionFor = transactionFor;
   saveRequest.timestamp = DATE_UTC;
 
   IsLoading(true);
