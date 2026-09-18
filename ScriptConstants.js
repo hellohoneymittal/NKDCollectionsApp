@@ -2,6 +2,7 @@
 
 const CHECK_PASSWORD_API =
   "https://script.google.com/macros/s/AKfycbw6xp8f4KopdloxGYNGQYWWEU6E_eM_-Zd6CrILLjBdUjPRF0o3LQow624rtsBOEhK9-w/exec?password=";
+// TODO that need to be fixed.
 const GET_COLLECTION_MASTER_DATA =
   "https://script.google.com/macros/s/AKfycbx_pga1XERDEQSFqw9p-0JeFFzxvNi_sBVN4yPvurG3m7jrOY1mfDeWZ4t2NNEOhOG9ug/exec?devName=";
 const APPLICATION_URL =

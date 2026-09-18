@@ -1185,6 +1185,7 @@ async function CALL_API_WITH_CACHE(
   inputData = {},
   cacheHours = null,
   forceRefresh = false,
+  isWriteOperation = false,
 ) {
   if (!forceRefresh) {
     const cachedResponse = await DB_GET(
@@ -1201,11 +1202,31 @@ async function CALL_API_WITH_CACHE(
 
   console.log(`Cache Miss : ${apiType}`);
 
-  const response = await CALL_API(apiType, inputData);
+  let response;
 
-  if (response) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    console.log(`API Attempt ${attempt}/3 : ${apiType}`);
+
+    response = await CALL_API(apiType, inputData);
+
+    if (response) {
+      console.log(`API Success on Attempt ${attempt} : ${apiType}`);
+      break;
+    }
+
+    if (isWriteOperation) {
+      console.log(`Write API failed. No retry : ${apiType}`);
+      break;
+    }
+
+    if (attempt < 3) {
+      console.log(`API failed. Retrying... : ${apiType}`);
+    }
+  }
+
+  if (response && !isWriteOperation) {
     await DB_SET(
-      apiType, // cache key = apiType
+      apiType,
       response,
       INDEX_DB.dbName,
       INDEX_DB.storeName,
