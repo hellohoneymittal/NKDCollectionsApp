@@ -1146,7 +1146,7 @@ async function CALL_API(apiType, data) {
       inputData: data,
     };
     try {
-      const response = await API_HANDLER(request);
+      const response = await API_HANDLER_AXIOS(request);
       if (response) {
         return response;
         //
@@ -1425,7 +1425,7 @@ function parseTimeToMinutes(timeStr) {
   return hours * 60 + minutes;
 }
 
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 function DB_OPEN_INTERNAL(dbName = "AppDB", storeName = "store") {
   return new Promise((resolve, reject) => {
